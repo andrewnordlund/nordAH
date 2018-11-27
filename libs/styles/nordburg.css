@@ -1,0 +1,28 @@
+/*
+   	nordburg.css:
+	Version : 1.0.0
+*/
+.nordburg-sorted-asc {
+	display: inline-block;
+	padding-left: 13px;
+	padding-right: 13px;
+	background-repeat: no-repeat;
+	background-position: left center;
+	background-image: url("up-arrow.png");
+}
+.nordburg-sorted-desc {
+	display: inline-block;
+	padding-left: 13px;
+	padding-right: 13px;
+	background-repeat: no-repeat;
+	background-position: left center;
+	background-image: url("down-arrow.png");
+}
+.nordburg-collapsed-right-arrow {
+	display: inline-block;
+	padding-left: 13px;
+	padding-right: 13px;
+	background-repeat: no-repeat;
+	background-position: left center;
+	background-image: url("right-arrow.png");
+}

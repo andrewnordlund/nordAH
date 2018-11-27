@@ -1,0 +1,46 @@
+{
+	"manifest_version": 2,
+	"description": "__MSG_extensionDescription__",
+	"name": "__MSG_extensionName__",
+	"version": "0.1.0",
+	"icons" : {
+		"48" : "icons/nordAH-48.png",
+		"96" : "icons/nordAH-96.png"
+	},
+	"homepage_url": "https://www.nordburg.ca/ext/home.php",
+	"applications": {
+		"gecko": {
+			"id": "nordAH@nordburg.ca",
+			"strict_min_version": "45.0",
+			"update_url" : "https://www.nordburg.ca/ext/updates.php?extid=nordAH&form=json"
+		}
+	},
+	"background": {
+		"scripts": ["libs/nordburg.js", "libs/nordAH.js", "nordAH-bg.js"]
+	},
+	"browser_action": {
+		"browser_style" : true,
+		"default_title" : "URLs",
+		"default_popup": "popup/nordAHpopup.html",
+		"default_icon": {
+			"19" : "icons/nordAH-19.png",
+			"38" : "icons/nordAH-38.png"
+		}
+	},
+	"content_scripts": [
+		{
+			"matches": [ "<all_urls>" ],
+			"js": ["libs/nordburg.js", "libs/nordAH.js", "content_scripts/nordAH-cs.js" ],
+			"run_at" : "document_end"
+		}
+	],
+	"default_locale": "en",
+	"developer": {
+		"name": "Andrew Nordlund"
+	},
+	"permissions": [
+		"tabs",
+		"<all_urls>",
+		"storage"
+	]
+}
