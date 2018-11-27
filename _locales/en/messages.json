@@ -1,0 +1,171 @@
+{
+	"extensionName": {
+		"message": "Nordburg Assessment Helper",
+		"description": "Name of the extension."
+	},
+	
+	"extensionDescription": {
+		"message": "Helps with assessments of a website, keeping track of URLs, etc.",
+		"description": "Description of the extension."
+	},
+	"randomSample" : {
+		"message":"Random Sample",
+		"description": "The random sample section heading"
+	},
+	"pagesInSite" : {
+		"message":"Pages in site",
+		"description" : "The label for the number of pages in the site input"
+	},
+	"calculate":{
+		"message":"Calculate",
+		"description" : "The value of the Calculate button"
+	},
+	"numOfPagesResultsP" : {
+		"message" : "Random sample size",
+		"description" : "The size of the random sample of a site."
+	},
+	"assessmentProcess" : {
+		"message" : "Assessment Process",
+		"description" : "Assessment Process H2 text"
+	},
+	"startRecording" : {
+		"message" : "Start",
+		"description" : "Button to start recording"
+	},
+	"stopRecording" : {
+		"message" : "Stop",
+		"description" : "Button to stop recording"
+	},
+	"showResults" : {
+		"message" : "Show Results",
+		"description" : "Button to show results"
+	},
+	"clear" : {
+		"message" : "Clear",
+		"description" : "Button to clear URL list"
+	},
+	"assessmentResultsH1" : {
+		"message" : "Assessment Results",
+		"description" : "H1 of the Assessment Results page"
+	},
+	"title" : {
+		"message" : "Title",
+		"description" : "Title"
+	},
+	"order" : {
+		"message" : "Order",
+		"description" : "Order"
+	},
+	"sortBy" : {
+		"message" : "Sort by",
+		"description" : "Sort by"
+	},
+	"close" : {
+		"message" : "Close",
+		"description" : "Close"
+	},
+	"problemGettingSiteInfo" : {
+		"message" : "There was a problem getting info on the site.",
+		"description" : "When the results page can't get the saved info on the site."
+	},
+	"noPagesInAssessment" : {
+		"message" : "There aren't any sites yet visited in this assessment.",
+		"description" : "When there aren't any pages."
+	},
+	"lang" : {
+		"message" : "en",
+		"description" : "To be used in 'lang' attributes."
+	},
+	"remove" : {
+		"message" : "Remove",
+		"description" : "Remove"
+	},
+	"undo" : {
+		"message" : "Undo",
+		"description" : "Undo"
+	},
+	"titles" : {
+		"message" : "Titles",
+		"description" : "Titles title"
+	},
+	"titleTag" : {
+		"message" : "Title Tag",
+		"description" : "Title Tag"
+	},
+	"metadata" : {
+		"message" : "Metadata",
+		"description" : "Metadata"
+	},
+	"h1s" : {
+		"message" : "H1s",
+		"description" : "H1s"
+	},
+	"breadcrumbs" : {
+		"message" : "Breadcrumbs",
+		"description" : "Breadcrumbs"
+	},
+	"noTitleTag" : {
+		"message" : "No Title",
+		"Description" : "No title"
+	},
+	"noMetadata" : {
+		"message" : "No Metadata title",
+		"description" : "No metadata title"
+	},
+	"noH1s" : {
+		"message" : "No H1 tags",
+		"description" : "No H1 tags"
+	},
+	"noBreadcrumbs" : {
+		"message" : "Could not find breadcrumbs",
+		"description" : "Could not find breadcrumbs"
+	},
+	"languages" : {
+		"message":"Languages",
+		"description" : "Languages title"
+	},
+	"ElementID" : {
+		"message":"Element ID",
+		"description" : "Element ID"
+	},
+	"Text" : {
+		"message" : "Text",
+		"description" : "Text th text"
+	},
+	"interoperability" : {
+		"message" : "Interoperability",
+		"description" : "Standard on Interoperability"
+	},
+	"encoding" : {
+		"message" : "Encoding",
+		"description": "Encoding title"
+	},
+	"feeds" : {
+		"message" : "Feeds",
+		"description" : "Feeds title"
+	},
+	"feedType" : {
+		"message" : "Feed Type",
+		"description" : "Feed type label"
+	},
+	"nofeeds" : {
+		"message" : "No feeds",
+		"description" : "When there are no feeds to show"
+	},
+	"both" : {
+		"message" : "Both",
+		"description" : "Both RSS and ATOM"
+	},
+	"contentType" : {
+		"message" : "Content type",
+		"description" : "Content type label"
+	},
+	"browserSees" : {
+		"message" : "Browser sees this as",
+		"description" : "What the browser sees label"
+	},
+	"unknown" : {
+		"message" : "Unknown",
+		"description" : "When something's unknown"
+	}
+}

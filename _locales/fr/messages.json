@@ -1,0 +1,172 @@
+{
+	
+	"extensionName": {
+		"message": "L'aide du Assessment du Nordburg",
+		"description": "Name of the extension."
+	},
+	
+	"extensionDescription": {
+		"message": "Aides avec les assessments du sites web.",
+		"description": "Description of the extension."
+	},
+	"randomSample" : {
+		"message":"\u00C9chantillon al\u00E9atoire",
+		"description": "The random sample section heading"
+	},
+	"pagesInSite" : {
+		"message":"Pages dans le site",
+		"description" : "The label for the number of pages in the site input"
+	},
+	"calculate":{
+		"message":"Calculer",
+		"description" : "The value of the Calculate button"
+	},
+	"numOfPagesResultsP" : {
+		"message" : "Taille de l'\u00E9chantillon al\u00E9atoire",
+		"description" : "The size of the random sample of a site."
+	},
+	"assessmentProcess" : {
+		"message" : "Processus d'\u00E9valuation",
+		"description" : "Assessment Process H2 text"
+	},
+	"startRecording" : {
+		"message" : "D\u00E9marrer",
+		"description" : "Button to start recording"
+	},
+	"stopRecording" : {
+		"message" : "Arr\u00EAtez",
+		"description" : "Button to stop recording"
+	},
+	"showResults" : {
+		"message" : "Afficher les URL",
+		"description" : "Button to show results"
+	},
+	"clear" : {
+		"message" : "Effacer la liste",
+		"description" : "Button to clear URL list"
+	},
+	"assessmentResultsH1" : {
+		"message" : "R\u00E9sultats de l'\u00E9valuation",
+		"description" : "H1 of the Assessment Results page"
+	},
+	"title" : {
+		"message" : "Titre",
+		"description" : "Title"
+	},
+	"order" : {
+		"message" : "Ordre",
+		"description" : "Order"
+	},
+	"sortBy" : {
+		"message" : "Trier par",
+		"description" : "Sort by"
+	},
+	"close" : {
+		"message" : "Fermer",
+		"description" : "Close"
+	},
+	"problemGettingSiteInfo" : {
+		"message" : "Un probl\u00E8me est survenu lors de l'obtention d'informations sur le site.",
+		"description" : "When the results page can't get the saved info on the site."
+	},
+	"noPagesInAssessment" : {
+		"message" : "Il n'y a pas encore de sites visit\u00E9s dans cette \u00E9valuation.",
+		"description" : "When there aren't any pages."
+	},
+	"lang" : {
+		"message" : "fr",
+		"description" : "To be used in 'lang' attributes."
+	},
+	"remove" : {
+		"message" : "Supprimer",
+		"description" : "Remove"
+	},
+	"undo" : {
+		"message" : "Annuler",
+		"description" : "Undo"
+	},
+	"titles" : {
+		"message" : "Titres",
+		"description" : "Titles title"
+	},
+	"titleTag" : {
+		"message" : "Title Tag",
+		"description" : "Title Tag"
+	},
+	"metadata" : {
+		"message" : "Metadata",
+		"description" : "Metadata"
+	},
+	"h1s" : {
+		"message" : "H1s",
+		"description" : "H1s"
+	},
+	"breadcrumbs" : {
+		"message" : "Breadcrumbs",
+		"description" : "Breadcrumbs"
+	},
+	"noTitleTag" : {
+		"message" : "No Title",
+		"Description" : "No title"
+	},
+	"noMetadata" : {
+		"message" : "No Metadata title",
+		"description" : "No metadata title"
+	},
+	"noH1s" : {
+		"message" : "No H1 tags",
+		"description" : "No H1 tags"
+	},
+	"noBreadcrumbs" : {
+		"message" : "Could not find breadcrumbs",
+		"description" : "Could not find breadcrumbs"
+	},
+	"languages" : {
+		"message":"Langues",
+		"description" : "Languages title"
+	},
+	"ElementID" : {
+		"message":"ID de l'\u00E9l\u00E9ment",
+		"description" : "Element ID"
+	},
+	"Text" : {
+		"message" : "Texte",
+		"description" : "Text th text"
+	},
+	"interoperability" : {
+		"message" : "Interop\u00E9rabilit\u00E9",
+		"description" : "Standard on Interoperability"
+	},
+	"encoding" : {
+		"message" : "Encodage",
+		"description": "Encoding title"
+	},
+	"feeds" : {
+		"message" : "Fil d'informations",
+		"description" : "Feeds title"
+	},
+	"feedType" : {
+		"message" : "Type de Fil d'informations",
+		"description" : "Feed type label"
+	},
+	"nofeeds" : {
+		"message" : "Aucun fil d'informations",
+		"description" : "When there are no feeds to show"
+	},
+	"both" : {
+		"message" : "les deux",
+		"description" : "Both RSS and ATOM"
+	},
+	"contentType" : {
+		"message" : "Type de contenu",
+		"description" : "Content type label"
+	},
+	"browserSees" : {
+		"message" : "Navigateur voit cela comme",
+		"description" : "What the browser sees label"
+	},
+	"unknown" : {
+		"message" : "Inconnu",
+		"description" : "When something's unknown"
+	}
+}

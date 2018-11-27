@@ -1,0 +1,30 @@
+body {
+	color: black;
+	background-color: white;
+}
+#saveLoadSection {
+	border: thin solid #808080;
+	margin: 1em 0;
+}
+#resultTable {
+	border: thin solid #808080;
+}
+#resultTable tr th, #resultTable tr td {
+	border: thin solid #808080;
+}
+#urlRow a{
+	display: inline-block;
+	padding-left: 13px;
+	padding-right: 13px;
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+.nordURLTracker-sorted-asc {
+	background-image: url("chrome://nordURLTracker/skin/up-arrow.png");
+}
+.nordURLTracker-sorted-desc {
+	background-image: url("chrome://nordURLTracker/skin/down-arrow.png");
+}
+button {
+	margin-top: 0.5em;
+}
