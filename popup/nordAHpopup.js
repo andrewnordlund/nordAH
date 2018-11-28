@@ -3,12 +3,12 @@ if (typeof (nordAHpopup) == "undefined") {
 }
 
 nordAHpopup = {
-	dbug : true, //nordAH.dbug,
+	dbug : nordAH.dbug,
 	running : false,
 	randomSampleSize : 0,
 	sizeOfSite : 0,
 	tabId : null,
-	htmlEls : {"numOfPagesTxt" : null, "numOfPagesBtn" : null, "randomSampleSizeOutput" : null, "numOfPagesResultsP" : null, "assessmentToggleBtn" : null, "showResultsBtn" : null, "clearBtn" : null, "titlesSection":null, "languagesSection":null, "doctypeSection":null, "encodingSection":null, "feedSection":null},
+	htmlEls : {"numOfPagesTxt" : null, "numOfPagesBtn" : null, "randomSampleSizeOutput" : null, "numOfPagesResultsP" : null, "assessmentToggleBtn" : null, "showResultsBtn" : null, "clearBtn" : null, "titlesSection":null, "languagesSection":null, "interopSection" : null, "doctypeSection":null, "encodingSection":null, "feedSection":null, "wriSection" : null},
 	init : function (savedObj) {
 		var sizeOfSite =0, randomSampleSize = "0";
 		if (savedObj && nordburg.countObjs(savedObj) > 0) {
@@ -92,17 +92,24 @@ nordAHpopup = {
 		nordAHpopup.htmlEls["languagesSection"] = document.getElementById("languagesSection");
 		var languagesSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["languagesSection"], "nodeText":browser.i18n.getMessage("languages")});
 
+		// Interoperability Section
+		nordAHpopup.htmlEls["interopSection"] = document.getElementById("interopSection");
+		//var interopSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["interopSection"], "nodeText":browser.i18n.getMessage("interoperability")});
+
+
 		// Doctype section
 		nordAHpopup.htmlEls["doctypeSection"] = document.getElementById("doctypeSection");
-		var doctypeSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["doctypeSection"], "nodeText":"Doctype"});
+		var doctypeSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":nordAHpopup.htmlEls["doctypeSection"], "nodeText":"Doctype"});
+
+		//nordAHpopup.htmlEls["interopSection"].insertBefore(interopSectionH2, nordAHpopup.htmlEls["doctypeSection"]);
 
 		// Encoding section
 		nordAHpopup.htmlEls["encodingSection"] = document.getElementById("encodingSection");
-		var encodingSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["encodingSection"], "nodeText":browser.i18n.getMessage("encoding")});
+		var encodingSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":nordAHpopup.htmlEls["encodingSection"], "nodeText":browser.i18n.getMessage("encoding")});
 
 		// Feed section
 		nordAHpopup.htmlEls["feedSection"] = document.getElementById("feedSection");
-		var feedSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["feedSection"], "nodeText":browser.i18n.getMessage("feeds")});
+		var feedSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":nordAHpopup.htmlEls["feedSection"], "nodeText":browser.i18n.getMessage("feeds")});
 	},
 	startRecording : function () {
 		if (nordAHpopup.dbug) console.log ("Start recording....");
@@ -199,12 +206,21 @@ nordAHpopup = {
 			var newItem = nordburg.createHTMLElement(document, "dt", {"textNode": titleTypes[k] + ":", "parentNode":titlesDL});
 			if (k.match(/titleTag|readcrumbs/i)) {
 				var style = (k == "titleTag" && titles[k] == browser.i18n.getMessage("noTitleTag") ? "border: thick solid #AA0000;" : "");
-				var newValue = nordburg.createHTMLElement(document, "dd", {"textNode":titles[k], "parentNode":titlesDL, "style" : style});
+				var newValue = nordburg.createHTMLElement(document, "dd", {"textNode":titles[k], "parentNode":titlesDL, "style" : style, "class":"selectable"});
+			} else if (k.match(/h1s/i)) {
+				var newValue = nordburg.createHTMLElement(document, "dd", {"parentNode":titlesDL});
+				var newOL = nordburg.createHTMLElement(document, "ol", {"parentNode":newValue, "id":k+"List"});
+				//for (var i = 0; i  < titles[k].length; i++) {
+				for (var h1 in titles[k]) {
+					var newLI = nordburg.createHTMLElement(document, "li", {"parentNode":newOL});
+					var titleText = nordburg.createHTMLElement(document, "span", {"parentNode":newLI, "textNode":h1, "class":"selectable"});
+					if (titles[k][h1]) property = nordburg.createHTMLElement(document, "span", {"parentNode":newLI, "textNode" : "(property=\"" + titles[k][h1] + "\")", "class":"unselectable", "style":"margin-left: 1.13em;"});
+				}
 			} else {
 				var newValue = nordburg.createHTMLElement(document, "dd", {"parentNode":titlesDL});
 				var newOL = nordburg.createHTMLElement(document, "ol", {"parentNode":newValue, "id":k+"List"});
 				for (var i = 0; i  < titles[k].length; i++) {
-					var newLI = nordburg.createHTMLElement(document, "li", {"parentNode":newOL, "textNode":titles[k][i]});
+					var newLI = nordburg.createHTMLElement(document, "li", {"parentNode":newOL, "textNode":titles[k][i], "class":"selectable"});
 				}
 			}
 		}
@@ -259,13 +275,13 @@ nordAHpopup = {
 		if (nordAHpopup.dbug) console.log ("dt created.  Now for the dd:");
 		var dd = nordburg.createHTMLElement(document, "dd", {"parentNode":feedDL, "textNode":feeds["feedType"]});
 
-		if (nordAHpopup.dbug) console.log ("Now list::");
+		if (nordAHpopup.dbug) console.log ("Now list:: with " + nordburg.countObjs(feeds["feedslist"]) + " feeds.");
 		var feedsOL = nordburg.createHTMLElement(document, "ol", {"parentNode":nordAHpopup.htmlEls["feedSection"], "id":"feedsList"});
-		for (var i = 0; i < feeds["feedslist"].length; i++) {
-			var li = nordburg.createHTMLElement(document, "li", {"parentNode":feedsOL, "textNode":feeds["feedslist"][i]});
+		//for (var i = 0; i < feeds["feedslist"].length; i++) {
+		for (var feed in feeds["feedslist"]) {
+			var li = nordburg.createHTMLElement(document, "li", {"parentNode":feedsOL, "textNode":"Feed: " + feed});
+			if (feeds["feedslist"][feed]) var link = nordburg.createHTMLElement(document, "span", {"parentNode":li, "textNode": feeds["feedslist"][feed], "class":"selectable parenthesised", "style":"margin-left:1.13em;"});
 		}
-		
-
 	}, // End of presentFeeds
 
 

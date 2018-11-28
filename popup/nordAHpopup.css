@@ -1,0 +1,22 @@
+body {
+	margin: 10px;
+	
+	
+}
+section {
+	border: thin inset #808080;
+	/*padding: 10px;*/
+}
+.selectable {
+	-moz-user-select: all; 
+}
+.unselectable {
+	-moz-user-select: none;
+	color: #AA0000;
+}
+.parenthesised::before {
+	content: "(";
+}
+.parenthesised::after {
+	content: ")";
+}

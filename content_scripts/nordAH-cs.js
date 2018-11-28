@@ -1,6 +1,5 @@
 var nordAHCS = {
 	dbug : nordAH.dbug,
-	running : false,
 
 	titles : {},
 	bodyLangs : {},
@@ -16,12 +15,12 @@ var nordAHCS = {
 		nordAHCS.getFeeds();
 	},
 	getTitles : function () {
-		if (nordAHCS.dbug) console.log("Getting titles.");
+		//if (nordAHCS.dbug) console.log("Getting titles.");
 		nordAHCS.getTitleTag();
 		nordAHCS.getMetaTitle();
 		nordAHCS.getH1s();
 		nordAHCS.getBreadCrumb();
-		if (nordAHCS.dbug) console.log("Sending back results.");
+		//if (nordAHCS.dbug) console.log("Sending back results.");
 	},
 	getTitleTag : function () {
 		if (document.title && document.title != "") {
@@ -47,14 +46,17 @@ var nordAHCS = {
 		nordAHCS.titles["metaTitle"] = returnValue;
 	},
 	getH1s : function () {
-		var returnValue = [];
+		var returnValue = {};
 		var h1s = document.getElementsByTagName("h1");
 		if (h1s) {
 			if (h1s == "undefined") {
-				returnValue.push(browser.i18n.getMessage("noH1s"));
+				returnValue[browser.i18n.getMessage("noH1s")] = null;
 			} else {
 				for (var i = 0; i < h1s.length; i++) {
-					returnValue.push(nordburg.trim(nordburg.getNodeText(h1s[i])));
+					var prop = null
+					var txt = nordburg.trim(nordburg.getNodeText(h1s[i]));
+					if (h1s[i].hasAttribute("property") && h1s[i].getAttribute("property").match(/name/i)) prop = h1s[i].getAttribute("property");
+					returnValue[txt] = prop;
 				}
 			}
 		}
@@ -175,7 +177,7 @@ var nordAHCS = {
 	}, //  End of getLangs
 	getDoctype : function () {
 		var page = document.doctype;
-		if (nordAHCS.dbug) console.log ("Got doctype: "  + document.doctype + ".");
+		//if (nordAHCS.dbug) console.log ("Got doctype: "  + document.doctype + ".");
 		var ver = browser.i18n.getMessage("unknown");
 		if (page) {
 			var msg = [];
@@ -227,8 +229,8 @@ var nordAHCS = {
 				}
 			}
 			
-			if (nordAHCS.dbug) console.log (msg.join("\n"));
-			if (nordAHCS.dbug) console.log ("About to save: " + tech + ", ver:" + ver + ", level " + level + ", output: " + output + ".");
+			//if (nordAHCS.dbug) console.log (msg.join("\n"));
+			//if (nordAHCS.dbug) console.log ("About to save: " + tech + ", ver:" + ver + ", level " + level + ", output: " + output + ".");
 			nordAHCS.doctype["tech"] = tech;
 			nordAHCS.doctype["ver"] = ver;
 			if (level) nordAHCS.doctype["level"] = level;
@@ -257,25 +259,25 @@ var nordAHCS = {
 				if (metas[i].hasAttribute("charset")) {
 					msg.push("Meta charset: " + metas[i].getAttribute("charset"));
 					nordAHCS.encoding["metaCharset"] = {"title" : "<meta charset>", "value" : metas[i].getAttribute("charset")};
-					if (nordAHCS.dbug) console.log ("Got metaCharset as " + nordAHCS.encoding["metaCharset"] + ".");
+					//if (nordAHCS.dbug) console.log ("Got metaCharset as " + nordAHCS.encoding["metaCharset"] + ".");
 				}
 				if (metas[i].hasAttribute("http-equiv") && metas[i].hasAttribute("content")) {
 					if (nordAHCS.dbug) console.log ("Got " + metas[i].getAttribute("http-equiv") + " = " + metas[i].getAttribute("content") + " metas.");
 					if (metas[i].getAttribute("http-equiv").match(/^Content-type$/i) && metas[i].getAttribute("content").match(/charset/i)) {
-						if (nordAHCS.dbug) console.log ("Got http-equiv");
+						//if (nordAHCS.dbug) console.log ("Got http-equiv");
 						
 						msg.push("Meta http-equiv: " + metas[i].getAttribute("content") + ".");
 						nordAHCS.encoding["MetaHttpEquiv"] = {"title" : "<http-equiv=\"Content-Type\">", "value" : metas[i].getAttribute("content")};
-						if (nordAHCS.dbug) console.log ("Got metaHttpEquiv as " + nordAHCS.encoding["metaHttpEquiv"] + ".");
+						//if (nordAHCS.dbug) console.log ("Got metaHttpEquiv as " + nordAHCS.encoding["metaHttpEquiv"] + ".");
 					} else {
-						if (nordAHCS.dbug) console.log ("Didn't have Content-type = something charset.");
+						//if (nordAHCS.dbug) console.log ("Didn't have Content-type = something charset.");
 					}
 				}
 			}
 		}
 		msg.push(browser.i18n.getMessage("contentType") + ": " + doc.contentType + ".");
 		msg.push(browser.i18n.getMessage("browserSees") + ": " + doc.characterSet + ".");
-		if (nordAHCS.dbug) console.log ("Saving encoding as " + msg.join("\n") + ".");
+		//if (nordAHCS.dbug) console.log ("Saving encoding as " + msg.join("\n") + ".");
 		//nordAHCS.encoding["encodingMsg"] = msg;
 		nordAHCS.encoding["charset"] = {"title" : "Charset", "value" : doc.characterSet};
 		nordAHCS.encoding["browserSees"] = {"title" : browser.i18n.getMessage("browserSees") , "value" : doc.characterSet};
@@ -283,30 +285,30 @@ var nordAHCS = {
 	}, // End of getAllEncoding
 	getFeeds : function () {
 		// Still needs to either return a value, or send a message back to the chrome script.  Worry about this when the other parts are done.
-		var feedoutput = [];
+		var feedoutput = {};
 		var feedType = "";
 		var rv = "nofeed";
 		var feed = browser.i18n.getMessage("nofeeds");
 		var doc = document;
-		if (nordAHCS.dbug) console.log ("The content type: " + doc.contentType + ".");
+		//if (nordAHCS.dbug) console.log ("The content type: " + doc.contentType + ".");
 		//if (nordAHCS.dbug) console.log ("doc: " + nordburg.objToString(doc) + ".");
 		if (doc.contentType.match(/xml/i)) {
-			if (nordAHCS.dbug) console.log ("The content type matches xml.");
+			//if (nordAHCS.dbug) console.log ("The content type matches xml.");
 			var rsss = doc.getElementsByTagName("RSS");
 			if (rsss.length > 0) {
 				if (nordAHCS.dbug) console.log ("Got RSS element.");
 				rv = "RSS";
-				feedoutput.push("RSS: " + doc.title + " (" + doc.location.href + ")");
+				feedoutput["RSS: " + doc.title] = doc.location.href;
 			} else {
-				if (nordAHCS.dbug) console.log ("Didn't get RSS element.");
+				//if (nordAHCS.dbug) console.log ("Didn't get RSS element.");
 				rsss = doc.getElementsByTagName("feed");
 				if (rsss.length > 0) {
-					if (nordAHCS.dbug) console.log ("Got Atom element.");
+					//if (nordAHCS.dbug) console.log ("Got Atom element.");
 					rv = "Atom";
-					feedoutput.push("Atom: " + doc.title + " (" + doc.location.href + ")");
+					feedoutput["Atom: " + doc.title] = doc.location.href;
 				} else {
-					if (nordAHCS.dbug) console.log ("Didn't get Atom element.");
-					if (nordAHCS.dbug) console.log("Okay, so here's the document:");
+					//if (nordAHCS.dbug) console.log ("Didn't get Atom element.");
+					//if (nordAHCS.dbug) console.log("Okay, so here's the document:");
 					var rootNode = doc.documentElement;
 					var src = [];
 					src.push("<" + rootNode.nodeName + ">");
@@ -324,23 +326,26 @@ var nordAHCS = {
 						var oldVal = nordAH.dbug;
 						//nordAH.dbug = true;
 						var actualRoot = actualDoc.documentElement;
-						if (nordAHCS.dbug) console.log("Actual rootnode name for " + doc.location.href + ": " + actualRoot.nodeName + ".");
+						//if (nordAHCS.dbug) console.log("Actual rootnode name for " + doc.location.href + ": " + actualRoot.nodeName + ".");
 						var rsss = actualRoot.getElementsByTagName("RSS");
 						if (rsss.length > 0) {
-							if (nordAHCS.dbug) console.log ("Got RSS element.");
+							//if (nordAHCS.dbug) console.log ("Got RSS element.");
 							rv = "RSS";
-							feedoutput = ["RSS: " + actualRoot.title + " (" + doc.location.href + ")"];
+							var stuff = "RSS: " + actualRoot.title;
+							feedoutput = {stuff : doc.location.href};
 						} else {
-							if (nordAHCS.dbug) console.log ("Didn't get RSS element.");
+							//if (nordAHCS.dbug) console.log ("Didn't get RSS element.");
 							rsss = actualRoot.getElementsByTagName("feed");
 							if (rsss.length > 0) {
-								if (nordAHCS.dbug) console.log ("Got Atom element.");
+								//if (nordAHCS.dbug) console.log ("Got Atom element.");
 								rv = "Atom";
-								feedoutput = ["Atom: " + actualRoot.title + " (" + doc.location.href + ")"];
+								var stuff = "Atom: " + actualRoot.title
+								feedoutput = {stuff : doc.location.href};
 							} else {
-								if (nordAHCS.dbug) console.log ("Beats me what this is.");
+								//if (nordAHCS.dbug) console.log ("Beats me what this is.");
 								rv = "nofeed";
-								feedoutput = [browser.i18n.getMessage("nofeeds")];
+								var stuff = browser.i18n.getMessage("nofeeds");
+								feedoutput = {stuff : null};
 							}
 						}
 						nordAHCS.feeds["feedType"] = rv;
@@ -352,7 +357,7 @@ var nordAHCS = {
 						*/
 						nordAHCS.feeds["feedslist"] = feedoutput;
 						
-						if (nordAHCS.dbug) console.log ("setFeedType::Mof::Setting feedType to " + nordAHCS.feeds["feedType"] + "."); //, and setting fFile to " + fFile + ".");
+						//if (nordAHCS.dbug) console.log ("setFeedType::Mof::Setting feedType to " + nordAHCS.feeds["feedType"] + "."); //, and setting fFile to " + fFile + ".");
 						// Send a message to popup to update the feed info
 						//nordAH.updateIconsAndLabels();
 						nordAHCS.dbug = oldVal;
@@ -381,14 +386,14 @@ var nordAHCS = {
 									} else {
 										rv = "Both";
 									}
-									feedoutput.push("Atom: " + links[i].getAttribute("title") + " (" + links[i].getAttribute("href") + ")");
+									feedoutput["Atom: " + links[i].getAttribute("title")] = links[i].getAttribute("href");
 								} else if (type.match(/application\/rss\+xml/)) {
 									if (rv == "nofeed" || rv == "RSS") {
 										rv = "RSS";
 									} else {
 										rv = "Both";
 									}
-									feedoutput.push("RSS: " + links[i].getAttribute("title") + " (" + links[i].getAttribute("href") + ")");
+									feedoutput["RSS: " + links[i].getAttribute("title")] = links[i].getAttribute("href");
 								}
 							}
 						}
@@ -402,7 +407,7 @@ var nordAHCS = {
 				if (nordAHCS.dbug) console.log ("Didn't get any links: " + links + ".");	
 			}
 		}
-		if (feedoutput.length == 0) feedoutput.push(browser.i18n.getMessage("nofeeds"));
+		if (nordburg.countObjs(feedoutput) == 0) feedoutput[browser.i18n.getMessage("nofeeds")] = null;
 		if (rv == "Both") rv = browser.i18n.getMessage("both");
 		nordAHCS.feeds["feedType"] = rv;
 		nordAHCS.feeds["feedslist"] = feedoutput;
@@ -411,6 +416,37 @@ var nordAHCS = {
 	}, // End of getFeeds
 	easterEgg : function () {
 		if (nordAHCS.dbug) console.log ("I would do the Easter Egg now.");
+		var screenH = window.innerHeight;
+		var screenW = window.innerWidth;
+		var pageYOffset = window.content.document.documentElement.scrollTop;
+		var body = window.content.document.getElementsByTagName("body");
+		if (body) {
+			body = body[0];
+			var x = (screenW/2) - 533/2;
+			var y = screenH + pageYOffset;
+					
+			var newDiv = window.content.document.createElement("div");
+			newDiv.setAttribute("id", "windowHolder");
+			newDiv.setAttribute("style", "position: absolute; z-index: 99999; left: 0; top: 0; width: " + screenW + "px; height: " + y + "px; overflow: hidden;");
+			body.appendChild(newDiv);
+			var img = window.content.document.createElement("img");
+			img.setAttribute("src", browser.extension.getURL("/content_scripts/mrfalcon-begining.png"));
+			img.setAttribute("style", "position: absolute; display: block; left: " + x + "px; height:317px; width:533px;");
+			img.setAttribute("alt", "Mr. Falcon.");
+			img.style.top= y + "px";
+			newDiv.appendChild(img);
+			var upInt;
+			upInt = setInterval(function () {
+				y = y - 5;
+				img.style.top= y + "px";
+				if (y < (317 * -1) + pageYOffset) {
+					clearInterval(upInt);
+					upInt = null;
+					body.removeChild(newDiv);
+				}
+			}, 1);	
+		}
+
 	},
 	notify : function (message, sender, sendResponse) {
 		if (nordAHCS.dbug) console.log ("Got message: " + message["msg"]);
@@ -425,5 +461,5 @@ var nordAHCS = {
 }
 
 browser.runtime.onMessage.addListener(nordAHCS.notify);
-nordAHCS.gatherInfo();
 if (nordAHCS.dbug) console.log ("nordAH::nordAH-cs.js loaded.");
+nordAHCS.gatherInfo();

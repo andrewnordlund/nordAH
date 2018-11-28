@@ -132,6 +132,10 @@
 		"message" : "Text",
 		"description" : "Text th text"
 	},
+	"interoperability" : {
+		"message" : "Interoperability",
+		"description" : "Standard on Interoperability"
+	},
 	"encoding" : {
 		"message" : "Encoding",
 		"description": "Encoding title"

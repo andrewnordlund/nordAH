@@ -132,13 +132,19 @@ nordAHbg = {
 			nordAHbg.saveList().then(function() {
 				sendResponse({"msg":"Finished clearning"});
 			}, nordAH.errorFun);
+		} else if (message["task"] == "easterEgg") {
+			//browser.tabs.query({active: true, currentWindow: true}).then(nordAHbg.startRecording, nordAH.errorFun);
+			browser.tabs.query({
+				currentWindow: true,
+				active: true
+			}).then(function (tabs) {
+				//for (var tab in tabs) {
+					if (nordAHbg.dbug) console.log ("About to send message to " + tabs[0].id + ".");
+					browser.tabs.sendMessage(tabs[0].id, {"msg":"Do the easter egg", "task":"easterEgg"});
+				//}
+			}).catch(nordAH.errorFun);
 		} else {
-			if (nordAHbg.dbug) console.log ("Didn't initiate find comic becase " + message["task"] + ".");
-			if (message["msg"].match(/asdfadf/)) {
-				if (nordAHbg.dbug) console.log ("nordAH-bg::Got a message: " + message["msg"] + " of " + message["imageSrc"] + " from " + message["pageURL"] + ".");
-				if (nordAHbg.dbug) console.log("nordAH-bg::Trying to send message to cmx.js.");
-				browser.runtime.sendMessage({"msg": "You got this message.", "imageSrc" : message["imageSrc"], "pageURL" : message["pageURL"]});
-			}
+			if (nordAHbg.dbug) console.log ("Didn't do anything becase " + message["task"] + ".");
 		}
 	}, // End of notify
 	startRecording : function (tabs) {
@@ -231,4 +237,4 @@ nordAHbg = {
 }
 browser.browserAction.onClicked.addListener(nordAHbg.initTab);
 browser.runtime.onMessage.addListener(nordAHbg.notify);
-console.log ("nordAH-bg.js loaded: " + nordAHbg.dbug + ".");
+if (nordAHbg.dbug) console.log ("nordAH-bg.js loaded: " + nordAHbg.dbug + ".");
