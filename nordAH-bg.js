@@ -13,33 +13,21 @@ if (typeof (nordAH) == "undefined") {
 nordAHbg = {
 	dbug : nordAH.dbug,
 	tabid : null,
-	urlList : [],
 	nextOrderNum : 0,
 	running : false,
 	saved : true,
-	randomSampleSize : 0,
-	sizeOfSite : 0,
-	initTab : function () {
-		var newTab = browser.tabs.create({url: "content_scripts/cmx.html"});
-		newTab.then(function setTabID(tab) { 
-			if (nordAHbg.dbug) console.log ("tab: " + tab + ".");
-			if (nordAHbg.dbug) {
-				var keys = nordburg.getKeys(tab);
-				console.log ("Keys: " + keys.join(", "));
-			}
-			if (nordAHbg.dbug) console.log ("tab: " + nordburg.objToString(tab) + ".");
-			nordAHbg.tabid = tab.id;
-			if (nordAHbg.dbug) console.log ("tabid: " + nordAHbg.tabid + ".");
-		}, nordAH.errorFun);
-	},
+
 	updateBadge : function () {
 		var badgeStr = "";
-		if (nordAHbg.dbug) console.log ("urlList.length: " + nordAHbg.urlList.length + ", randomSampleSize: " + nordAHbg.randomSampleSize + ".");
+		if (nordAHbg.dbug) {
+			console.log ("nordAH-bg::updateBadge::nordAH.urlList: "  + nordAH.urlList + ", " + typeof nordAH.urlList + ".");
+			console.log ("nordAH-bg::updateBadge::urlList.length: " + nordAH.urlList.length + ", randomSampleSize: " + nordAH.randomSampleSize + ".");
+		}
 		
-		//if (nordAHbg.urlList.length > 0) { // || nordAHbg.randomSampleSize > 0) {
-			badgeStr = nordAHbg.urlList.length.toString(); // +"/"+ nordAHbg.randomSampleSize + (nordAHbg.randomSampleSize > 0 ? " (" + nordAHbg.urlList.length / nordAHbg.randomSampleSize + "%)" : "");
+		//if (nordAH.urlList.length > 0) { // || nordAH.randomSampleSize > 0) {
+			badgeStr = nordAH.urlList.length.toString(); // +"/"+ nordAH.randomSampleSize + (nordAH.randomSampleSize > 0 ? " (" + nordAH.urlList.length / nordAH.randomSampleSize + "%)" : "");
 		//}
-		if (nordAHbg.dbug) console.log ("Therefore setting the badge text to " + badgeStr + ".");
+		if (nordAHbg.dbug) console.log ("nordAH-bg::updateBadge::Therefore setting the badge text to " + badgeStr + ".");
 		if (badgeStr != "") {
 			// Not sure why this is only showing the first 3 (instead of 4) characters
 			browser.browserAction.setBadgeText({"text":badgeStr});
@@ -99,9 +87,9 @@ nordAHbg = {
 			if (nordAHbg.dbug) console.log ("Sending back message to sender (prolly popup) running: " + nordAHbg.running + ".");
 			sendResponse({"msg" : nordAHbg.running});
 		} else if (message["task"] == "setNewValues") {
-			nordAHbg.sizeOfSite = message["sizeOfSite"];
-			nordAHbg.randomSampleSize = message["randomSampleSize"];
-			if (nordAHbg.dbug) console.log ("Got randomSampleSize of " + nordAHbg.randomSampleSize + ".");
+			nordAH.sizeOfSite = message["sizeOfSite"];
+			nordAH.randomSampleSize = message["randomSampleSize"];
+			if (nordAHbg.dbug) console.log ("Got randomSampleSize of " + nordAH.randomSampleSize + ".");
 			if (nordAHbg.running) {
 				nordAHbg.saveList();
 			}
@@ -121,14 +109,14 @@ nordAHbg = {
 			}, nordAH.errorFun);
 		} else if (message["task"] == "clear") {
 			if (nordAHbg.dbug) console.log ("nordAH-bg::Clearning url list");
-			nordAHbg.urlList = [];
+			nordAH.urlList = [];
 			nordAHbg.updateBadge();
 			nordAHbg.saveList().then(function() {
 				sendResponse({"msg":"Finished clearning"});
 			}, nordAH.errorFun);
 			//browser.tabs.sendMessage(nordAHbg.tabid, message);
 		} else if (message["task"] == "saveList") {
-			nordAHbg.urlList = message["urlList"];
+			nordAH.urlList = message["urlList"];
 			nordAHbg.saveList().then(function() {
 				sendResponse({"msg":"Finished clearning"});
 			}, nordAH.errorFun);
@@ -184,7 +172,7 @@ nordAHbg = {
 		if (nordAHbg.dbug) console.log ("addUrl:: seeing if I should add.");
 		var output = ["addUrl::"];
 		var toAdd = true;
-		var i = nordburg.allInstancesOf(nordAHbg.urlList, "url", url, nordAHbg.dbug);
+		var i = nordburg.allInstancesOf(nordAH.urlList, "url", url, nordAHbg.dbug);
 
 		if (nordAHbg.dbug) console.log("Number of instances of " + url + ": " + i.length + ".");
 		if (i.length > 0) {
@@ -210,12 +198,12 @@ nordAHbg = {
 		}
 		if (toAdd) {
 			if (nordAHbg.dbug) console.log("toAdd: " + toAdd + ".  So adding.");
-			nordAHbg.urlList.push({"url" : url, "title" : title, "order" : nordAHbg.nextOrderNum});
+			nordAH.urlList.push({"url" : url, "title" : title, "order" : nordAHbg.nextOrderNum});
 			nordAHbg.nextOrderNum++;
 			nordAHbg.saved = false;
 			//nordAHbg.setRecordingLblValue("recording");
 			// Should probably update the Show and Clear commands.
-			//if (nordAHbg.urlList.length > 0 ) {
+			//if (nordAH.urlList.length > 0 ) {
 			//	nordAHbg.showCmd.setAttribute("disabled", false);
 			//	nordAHbg.clearCmd.setAttribute("disabled", false);
 			//}
@@ -230,11 +218,21 @@ nordAHbg = {
 		if (nordAHbg.dbug) console.log (output.join("\n"));
 	}, // End of addUrl
 	saveList : function () {
-		var saving = browser.storage.local.set({"thisSite" : {"randomSampleSize" : nordAHbg.randomSampleSize, "sizeOfSite" : nordAHbg.sizeOfSite, "urlList":nordAHbg.urlList}});
+		//var saving = browser.storage.local.set({"thisSite" : {"randomSampleSize" : nordAH.randomSampleSize, "sizeOfSite" : nordAH.sizeOfSite, "urlList":nordAH.urlList}});
+		nordAH.saveSite();
 		nordAHbg.saved = true;
-		return saving;
+		//return saving;
 	}, // End of saveList
 }
-browser.browserAction.onClicked.addListener(nordAHbg.initTab);
 browser.runtime.onMessage.addListener(nordAHbg.notify);
+
+
 if (nordAHbg.dbug) console.log ("nordAH-bg.js loaded: " + nordAHbg.dbug + ".");
+
+nordAH.init();
+nordAH.getSaved(function () {
+	if (nordAHbg.dbug) console.log ("About to update badge.");
+	nordAHbg.updateBadge();
+}, nordAH.errorFun);
+
+nordAH.addToPostLoad([function () {nordAH.dbug = nordAH.dbug;}]);

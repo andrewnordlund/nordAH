@@ -4,8 +4,6 @@ if (typeof(nordburg) == undefined) {
 /*
  * To do:
  * 	- Generic Syncing functions
- * 		- create a sync.html page
- * 		- Generate form
  * 		- Investigate some password functions to login to nordburg.ca when needed
  *
  * Working on:
@@ -20,11 +18,12 @@ if (typeof(nordburg) == undefined) {
  * 			2) Nordbar has its own syncwindow for any and all add-ons
  */
 nordburg = {
-	version : "4.0.11",
+	version : "4.0.23",
 	eventList : {},
 	dbug : false,
 	syncWindow : null,
-	loginURL : null,
+	loginURL : "https://www.nordburg.ca/users/login.php",
+	cloudSyncURL : "https://www.nordburg.ca/misc/cloudSync.php",
 	getRemotePage : function (url, callback) {
 		var source = null;
 		var getFresh = true;
@@ -33,7 +32,7 @@ nordburg = {
 		if (arguments.length >=mn) {
 			getFresh = arguments[2];
 			if (arguments.length > mn) {
-				args = Array.slice(arguments);
+				args = Array.prototype.slice.call(arguments);
 				args = args.slice(mn);	
 			}
 		}
@@ -46,7 +45,7 @@ nordburg = {
 				url = url.replace(/\\/g, "/");
 				url = "file:///" + url;
 			}
-			if (!url.match(/[?&]rnd=/i)) {
+			if (getFresh && !url.match(/[?&]rnd=/i)) {
 				if (url.match(/\?/)) { 
 					url += "&";
 				} else {
@@ -64,6 +63,14 @@ nordburg = {
 					if (xmlhttp.status == 0 || xmlhttp.status == 200) {
 						var doc = document.implementation.createHTMLDocument("blah");
 						doc.documentElement.innerHTML = xmlhttp.responseText;
+						if (nordburg.dbug) {
+							console.log ("About to send back " + xmlhttp.responseText + ".");
+							var props = [];
+							for (var k in xmlhttp) {
+								props.push(k + ": " + xmlhttp[k]);
+							}
+							console.log (props.join("\n"));
+						}
 						callback(doc, args);
 					}
 				}
@@ -80,7 +87,7 @@ nordburg = {
 		if (arguments.length >= mn) {
 			getFresh = arguments[2];
 			if (arguments.length > mn) {
-				args = Array.slice(arguments);
+				args = Array.prototype.slice.call(arguments);
 				args = args.slice(mn);	
 			}
 		}
@@ -93,7 +100,7 @@ nordburg = {
 				url = url.replace(/\\/g, "/");
 				url = "file:///" + url;
 			}
-			if (!url.match(/[?&]rnd=/i)) {
+			if (getFresh && !url.match(/[?&]rnd=/i)) {
 				if (url.match(/\?/)) { 
 					url += "&";
 				} else {
@@ -101,7 +108,7 @@ nordburg = {
 				}
 				url += "rnd=" + Math.random()
 			}
-			console.log ("getRemoteFile::About to get " + url);
+			if (nordburg.dbug) console.log ("getRemoteFile::About to get " + url);
 			xmlhttp.open("GET",url,true);
 			xmlhttp.onreadystatechange=function () {
 				//console.log ("getRemoteFile::readystate = " + xmlhttp.readyState + " and status is " + xmlhttp.status + ".");
@@ -110,12 +117,14 @@ nordburg = {
 						callback("404", args);
 					}
 					if (xmlhttp.status == 0 || xmlhttp.status == 200) {
-						//console.log ("About to send back " + xmlhttp.responseText + ".");
-						var props = [];
-						for (var k in xmlhttp) {
-							props.push(k + ": " + xmlhttp[k]);
+						if (nordburg.dbug) {
+							console.log ("About to send back " + xmlhttp.responseText + ".");
+							var props = [];
+							for (var k in xmlhttp) {
+								props.push(k + ": " + xmlhttp[k]);
+							}
+							console.log (props.join("\n"));
 						}
-						//console.log (props.join("\n"));
 						callback(xmlhttp.responseText, args);
 					}
 				}
@@ -131,7 +140,7 @@ nordburg = {
 		if (arguments.length >= mn) {
 			getFresh = arguments[2];
 			if (arguments.length > mn) {
-				args = Array.slice(arguments);
+				args = Array.prototype.slice.call(arguments);
 				args = args.slice(mn);
 			}
 		}
@@ -144,7 +153,7 @@ nordburg = {
 				file = file.replace(/\\/g, "/");
 				file = "file:///" + file;
 			}
-			if (!file.match(/[?&]rnd=/i)) {
+			if (getFresh && !file.match(/[?&]rnd=/i)) {
 				if (file.match(/\?/)) { 
 					file += "&";
 				} else {
@@ -193,6 +202,8 @@ nordburg = {
 			}
 		}	
 	}, // end of getLocalFile
+
+	// Date functions:
 	getYear : function (d) {
 		return d.getFullYear();
 	},
@@ -201,6 +212,9 @@ nordburg = {
 	},
 	getDay : function (d) {
 		return ("0" + d.getDate()).substr(-2, 2);
+	},
+	dateToString(d) {
+		return nordburg.getYear(d) + "-" + nordburg.getMonth(d) + "-" + nordburg.getDay(d);
 	},
 	getToday : function () {
 		var today = new Date();
@@ -238,6 +252,177 @@ nordburg = {
 		output += "\nYesterday: " + d;
 		return d;
 	},
+	getEnglishMonth : function(m) {
+		m = m.replace(/(?:\W|^)jan(vier)?(?:\W|$)?/i, "January");
+		m = m.replace(/(?:\W|^)f[e\u00E9]v(rier)?(?:\W|$)?/i, "February");
+		m = m.replace(/(?:\W|^)mars?(?:\W|$)?/i, "March");
+		m = m.replace(/(?:\W|^)avr(il)?(?:\W|$)?/i,"April");
+		m = m.replace(/(?:\W|^)mai(?:\W|$)?/i, "May");
+		m = m.replace(/(?:\W|^)j(?:ui?)?n(?:\W|$)?/i, "June");
+		m = m.replace(/(?:\W|^)ju(ill?(et)?|l)(?:\W|$)?/i, "July");
+		m = m.replace(/(?:\W|^)ao[u\u00FB]t?(?:\W|$)?/i, "August");
+		m = m.replace(/(?:\W|^)sep(t(embre)?)?(?:\W|$)?/i, "September");
+		m = m.replace(/(?:\W|^)oct(obre)?(?:\W|$)?/i, "October");
+		m = m.replace(/(?:\W|^)nov(embre)?(?:\W|$)?/i, "November");
+		m = m.replace(/(?:\W|^)d[e\u00E9]c(embre)?(?:\W|$)?/i, "December");
+		/*
+		for (var m in fMois) {
+			console.log ("Trying regex pattern: " + m + ".");
+        		m = m.replace(new RegExp(m, 'ig'), fMois[m]);
+		}*/
+		return m;
+	}, // End of getEnglishMonth
+	getDateAsObject : function (d) {
+		var dbug = false;
+		var dbug = (arguments.length == 2 && arguments[1] != null && arguments[1] != false ? true : false);
+		if (dbug) console.log ("Got date: " + d + " which is of type " + typeof(d) + ".");
+		var rv = null;
+		if (typeof(d) == "object" && d instanceof Date) {
+			if (dbug) console.log ("Easy peasy leamon squeezy.  It's already a Date.");
+			rv = d;
+		} else if (typeof(d) == "string") {
+			if (dbug) console.log ("It's a string.  Let's try to make a Date out of it.");
+			d = nordburg.getEnglishMonth(d);
+			if (dbug) console.log ("With an Egnlish month, it should be: " + d +".");
+			
+			var parts = null;
+			if (parts = d.match(/(?:\D|^)(\d\d\d\d)[-\\\/](\d\d)[-\\\/](\d\d)(?:\D|$)/)) {
+				rv = new Date(parts[1]+ "-" + parts[2] + "-" + parts[3] + "T00:00:00");
+			} else {
+				rv = new Date(d);
+			}
+			if (rv == "Invalid Date") {
+				if (dbug) console.log ("Okay, now new Date(d) didn't work.  Gotta try to figure out what the date could be.");
+				
+				parts = d.match(/(\d\d\d\d)[-\\\/](\d\d)[-\\\/](\d\d)/);
+				if (parts) {
+					if (dbug) console.log ("That wasn't too hard.  It was in a predictable format.  Trying to create a date out of " + parts[1] + "-" + parts[2] + "-" + parts[3] + ".");
+					rv = new Date(parts[1]+ "-" + parts[2] + "-" + parts[3] + "T00:00:00");
+				} else {
+					if (dbug) console.log ("Oh snap.  This stuff just got real.  If you see 4 digits, it must be the year.");
+					var year, mo, day = null;
+					if (year = d.match(/(\d\d\d\d)/)) {
+						year = year[1];
+						if (dbug) console.log ("And that year is " + year + ".  Now look for the month and day.");
+						if (month = d.match(/(?:\D|^)(\d\d?)[-\\\/ \s\.](\d\d?)(?:$|\D)/)) {
+							if (dbug) console.log ("Trying to figure out which is day and which is month from " + month[1] + " and " + month[2] +".");
+							// Now which is which?
+							if (month[1] > 12 && month[2] <= 12) {
+								mo = month[2];
+								day = month[1];
+							} else if (month[1] <= 12 && month[2] > 12) {
+								mo = month[1];
+								day = month[2];
+							} else if (month[1] <= 12 && month[2] <= 12) {
+								// This is random right here.
+								mo = month[1];
+								day = month[2];
+							} else {
+								throw new Error("Could not determine month from " + d + ".");
+							}
+							rv = new Date(year, parseInt(mo) - 1, day);
+						} else {
+							if (dbug) console.log ("Didn't find just numbers.  Perhaps the month is written out?");
+							var writtenMonth = d.match(/(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)/i);
+							if (writtenMonth) {
+								mo = writtenMonth[1];
+								if (dbug) console.log ("Found a written month: " + mo + ".");
+								if (dbug) console.log ("Already had a year: " + year + ".");
+								if (day = d.match(/(?:\D|^)(\d\d?)(?:$|\D)/)) {
+									if (day[1] <= 31) day = day[1];
+									rv = new Date(mo + " " +day+ ", " + year);
+								} else {
+									throw new Error("Got the month (" + mo + ") and year (" + year + "), but not the day.");
+								}
+								
+								/*
+								} else if (parts[3].match(/\d\d\d\d/)) {
+									year = parts[3];
+									if (parts[1] <= 31) day = parts[1];
+								}
+								rv = new Date(mo + " " + day + ", " + year);
+								*/
+								if (rv == "Invalid Date") throw new Error("Couldn't determine date from " + d + ".  Year: " + year + ", month: " + mo + ", day: " + day + ".");
+							} else {
+								throw new Error("Could not determine month from " + d + ".");
+							}
+						}
+						// If you get here...I forget what I was gonna say.
+					} else if (parts = d.match(/(\d\d?)[-\\\/](\d\d?)[-\\\/](\d\d?)/)) {
+						if (dbug) console.log ("Couldn't find the year.  Must be in 2 digits.  Friggin' Y2K.");
+						if (parts[1] > 31 && parts[2] <= 31 && parts[3] <= 31) {
+							year = parts[1];
+							if (dbug) console.log ("And that year is " + year + ".");
+							if (parts[2] > 12 && parts[3] <= 12) {
+								mo = parts[3];
+								day = parts[2];
+							} else if (parts[2] <=12 && parts[3] > 12) {
+								mo = parts[2];
+								day = parts[3];
+							} else if (parts[2] <=12 && parts[3] <=12) {
+								// This is random right here.
+								mo = parts[2];
+								day = parts[3];
+							} else {
+								throw new Error("Could not determine day or month from " + d + ".");
+							}
+						} else if (parts[1] <= 31 && parts[2] > 31 && parts[3] <= 31) {
+							year = parts[2];
+							if (dbug) console.log ("And that year is " + year + ".");
+							if (parts[1] > 12 && parts[3] <= 12) {
+								mo = parts[3];
+								day = parts[1];
+							} else if (parts[1] <=12 && parts[3] > 12) {
+								mo = parts[1];
+								day = parts[3];
+							} else if (parts[1] <=12 && parts[3] <=12) {
+								// This is random right here.
+								mo = parts[1];
+								day = parts[3];
+							} else {
+								throw new Error("Could not determine day or month from " + d + ".");
+							}
+						} else if (parts[1] <= 31 && parts[2] <= 31 && parts[3] > 31) {
+							year = parts[3];
+							if (dbug) console.log ("And that year is " + year + ".");
+							if (parts[1] > 12 && parts[2] <= 12) {
+								mo = parts[2];
+								day = parts[1];
+							} else if (parts[1] <=12 && parts[2] > 12) {
+								mo = parts[1];
+								day = parts[2];
+							} else if (parts[1] <=12 && parts[2] <=12) {
+								// This is random right here.
+								mo = parts[1];
+								day = parts[2];
+							} else {
+								throw new Error("Could not determine day or month from " + d + ".");
+							}
+						} else {
+							throw new Error("Couldn't determine even the year from this mess.");
+						}
+						rv = new Date(year, parseInt(mo) - 1, day);
+					} else {
+						throw new Error("Couldn't find anything remotely related to a date in that string.");
+					}
+				}
+			} else {
+				if (dbug) console.log ("Yay!  That worked!");
+				// Nothing to do here because the passed date string is a valid Date.
+			}
+		} else {
+			// Date is neither a string nor a Date object
+			throw "Couldn't determine type of date " + d + " (" + typeof(d) + ").";
+		}
+		return rv;
+	}, // End of getDateAsObject
+	getDateAsString : function (d) {
+		var dbug = false;
+		var dbug = (arguments.length == 2 && arguments[1] != null && arguments[1] != false ? true : false);
+		return nordburg.dateToString(nordburg.getDateAsObject(d, dbug));
+	}, // End of getDateAsString
+	// End of date functions
+
 	countObjs : function (obj) {
 		var returnValue = 0;
 		for (var i in obj) {
@@ -306,6 +491,8 @@ nordburg = {
 		}
 	},
 	getNodeText : function(n) {
+		var keepSpaces = false;
+		if (arguments.length == 2 && arguments[1] != null) keepSpaces = arguments[1];
 		var returnValue = "";
 		if (n == "undefined") {
 			returnValue = "";
@@ -313,8 +500,10 @@ nordburg = {
 			for (var i=0; i < n.childNodes.length; i++) {
 				if (n.childNodes[i].nodeType == 3 || n.childNodes[i].nodeType == 4) {
 					returnValue += n.childNodes[i].nodeValue;
+					if (!keepSpaces) returnValue = nordburg.trim(returnValue);
 				} else if (n.childNodes[i].nodeType == 1) {
 					returnValue += nordburg.getNodeText(n.childNodes[i]);
+					if (!keepSpaces) returnValue = nordburg.trim(returnValue);
 				}
 			}
 		}
@@ -405,42 +594,63 @@ nordburg = {
 	},
 	createHTMLElement : function (creator, type, attribs) {
 		var dbug = (((arguments.length == 4 &&arguments[3] != null && arguments[3] != undefined) || nordburg.dbug == true) ? true : false);
-		//console.log ("createHTMLElement::dbug: " + dbug + " because arguments.length: " + arguments.length + ", and argument[3]: " + arguments[3] + ".");
+		if (dbug) console.log ("createHTMLElement::dbug: " + dbug + " because arguments.length: " + arguments.length + ", and argument[3]: " + arguments[3] + ".");
 		if (dbug) console.log("nordburg::createHTMLElement " + type + (attribs.hasOwnProperty("id") ? "#" + attribs["id"] : "") + (attribs.hasOwnProperty("textNode") ? " containing " + attribs["textNode"] : "") + ".");
 		// From: http://stackoverflow.com/questions/26248599/instanceof-htmlelement-in-iframe-is-not-element-or-object
-		var iwin = content.window;
+		var iwin = window;
 		// idiv instanceof iwin.HTMLElement; // true
 		var newEl = creator.createElement(type);
 		for (var k in attribs) {
 			if (dbug) console.log ("Checking attrib " + k + ".");
-			if (k == "parentNode" && attribs[k] instanceof iwin.HTMLElement) {
-				if (dbug) console.log("Dealing with parentnode.");
-				if (attribs[k] instanceof HTMLElement) {
-					if (dbug) console.log("Appending...");
-					attribs[k].appendChild(newEl);
-				} else if (attribs[k] instanceof String || typeof(attribs[k]) === "string") {
-					try {
-						if (dbug) console.log("Getting, then appending...");
-						document.getElementById(attribs[k]).appendChild(newEl);
+			if (k == "parentNode") {
+				if (dbug) console.log("createHTMLElement::Dealing with parentnode.");
+				var parentNode = nordburg.getHTMLElement(creator, attribs[k], dbug);
+				try {
+					if (attribs.hasOwnProperty("insertBefore")) {
+						var beforeEl = nordburg.getHTMLElement(creator, attribs["insertBefore"], dbug);
+						parentNode.insertBefore(newEl, beforeEl);
+					} else if (attribs.hasOwnProperty("insertAfter")) {
+						var afterEl = nordburg.getHTMLElement(creator, attribs["insertAfter"], dbug);
+						parentNode.insertBefore(newEl, afterEl.nextSibling);
+					} else {
+						parentNode.appendChild(newEl);
 					}
-					catch (er) {
-						console.error("Error creating HTML Element: " + er.message + ".");
-					}
+				}
+				catch (er) {
+					console.error("Error appending newEl to parentNode: " + er.message + ".");
 				}
 			} else if (k == "textNode" || k == "nodeText") {
 				if (typeof (attribs[k]) == "string") {
 					newEl.appendChild(creator.createTextNode(attribs[k]));
-				} else if (attribs[k] instanceof iwin.HTMLElement) {
+				} else if (attribs[k] instanceof iwin.HTMLElement || attribs[k] instanceof HTMLElement) {
 					newEl.appendChild(attribs[k]);
 				} else {
 					newEl.appendChild(creator.createTextNode(attribs[k].toString()));
 				}
+			} else if (k.match(/^insert(Before|After)$/)) {
+				// Do nothing.
 			} else {
 				newEl.setAttribute(k, attribs[k]);
 			}
 		}
 		return newEl;
 	}, // End of createHTMLElement
+	getHTMLElement : function (creator, el) {
+		var rv = null;
+		var dbug = (((arguments.length == 3 && arguments[2] != null && arguments[2] != undefined && arguments[2] !== false) || nordburg.dbug == true) ? true : false); 
+		var iwin = window;
+		if (el instanceof HTMLElement || el instanceof iwin.HTMLElement) {
+			rv = el;
+		} else if (el instanceof String || typeof(el) === "string") {
+			try {
+				if (dbug) console.log ("Trying to getHTMLElement " + el + ".");
+				rv = creator.getElementById(el);
+			} catch (er) {
+				console.error("Error getting HTML Element #" + el + ".  Apparently that's not on this page.");
+			}
+		}
+		return rv;
+	}, // End of getHTMLElement
 	createOptionsHTMLElement : function (creator, type, attribs) {
 		var dbug = (((arguments.length == 4 &&arguments[3] != null && arguments[3] != undefined) || nordburg.dbug == true) ? true : false);
 		//console.log ("createHTMLElement::dbug: " + dbug + " because arguments.length: " + arguments.length + ", and argument[3]: " + arguments[3] + ".");
@@ -450,19 +660,22 @@ nordburg = {
 		var newEl = creator.createElement(type);
 		for (var k in attribs) {
 			if (dbug) console.log ("Checking attrib " + k + ".");
-			if (k == "parentNode" && attribs[k] instanceof HTMLElement) {
+			if (k == "parentNode") { // && attribs[k] instanceof HTMLElement) {
 				if (dbug) console.log("Dealing with parentnode.");
-				if (attribs[k] instanceof HTMLElement) {
-					if (dbug) console.log("Appending...");
-					attribs[k].appendChild(newEl);
-				} else if (attribs[k] instanceof String || typeof(attribs[k]) === "string") {
-					try {
-						if (dbug) console.log("Getting, then appending...");
-						document.getElementById(attribs[k]).appendChild(newEl);
+				var parentNode = nordburg.getHTMLElement(creator, attribs[k], dbug);
+				try {
+					if (attribs.hasOwnProperty("insertBefore")) {
+						var beforeEl = nordburg.getHTMLElement(creator, attribs["insertBefore"], dbug);
+						parentNode.insertBefore(newEl, beforeEl);
+					} else if (attribs.hasOwnProperty("insertAfter")) {
+						var afterEl = nordburg.getHTMLElement(creator, attribs["insertAfter"], dbug);
+						parentNode.insertBefore(newEl, afterEl.nextSibling);
+					} else {
+						parentNode.appendChild(newEl);
 					}
-					catch (er) {
-						console.error("Error creating HTML Element: " + er.message + ".");
-					}
+				}
+				catch (er) {
+					console.error("Error appending newEl to parentNode: " + er.message + ".");
 				}
 			} else if (k == "textNode" || k == "nodeText") {
 				if (typeof (attribs[k]) == "string") {
@@ -516,12 +729,12 @@ nordburg = {
 		 * 3) The new one gets saved locally.
 		 * 4) The new one gets uploaded to the cloud.
 		 */
-		var syncformURL = "https://www.nordburg.ca/misc/cloudSync.php"; //nordburg.getCharPref("extensions.nordburg", "syncFormURL");
+		var syncformURL = nordburg.cloudSyncURL; //"https://www.nordburg.ca/misc/cloudSync.php"; //nordburg.getCharPref("extensions.nordburg", "syncFormURL");
 		var params = "?hijax=true&task=getForm";
 		var args = [];
 		var mn = 2;
 		if (arguments.length >=mn) {
-			args = Array.slice(arguments);
+			args = Array.prototype.slice.call(arguments);
 			args = args.slice(mn);	
 		}
 		nordburg.getRemoteFile(syncformURL + params, function (doc) {
@@ -591,82 +804,53 @@ nordburg = {
 			*/
 		});
 	}, // End of showSyncForm
-	uploadSyncFile : function (cloud_files_ID, cftID, xmlContents) {
+	uploadSyncFile : function (cloud_files_ID, xmlContents) {
 		//var permDbug = nordburg.dbug;
-		var dbug = true;
-		//var resWin = null;
-		//var msgCentre = null;
+		var dbug = nordburg.dbug;
 		var callback = null;
-		if (arguments.length >=4) {
-			callback = arguments[3];
-			//msgCentre = arguments[4];
-			//args = Array.slice(arguments);
-			//args = args.slice(mn);	
+		if (arguments.length >=3) {
+			callback = arguments[2];
 		}
 
-		// Do stuff here.
-		//if (dbug) console.log ("Gonna now upload the file and post results to " + msgCentre + ".");
-		if (dbug) {
-			if (callback) {
-				console.log("Got resWin.");
-			} else {
-				console.log ("Didn't get resWin.");
-			}
-		}
-		/*
-		 * This needs some work.
-		 * Like, shouldn't some of this be in nordburg.js?  Ummmmm....maybe not?
-		 * Okay, so the URL should be gotten from the prefs, and
-		 * the cloud_files_ID should be in a local parameter
-		 */
-		var cloudSyncURL = "https://www.nordburg.ca/misc/cloudSync.php"; //"nordburg.getCharPref("extensions.nordburg", "syncFormURL");
-		//var cloud_files_ID = nordburg.getCharPref("extensions.nordPayTracker", "cloudFilesID");
-		//var cftID = "2";
-		//var params = "?hijax=true&task=getForm";
-		
 		var http = new XMLHttpRequest();
-		http.open("POST", cloudSyncURL, true);
+		http.open("POST", nordburg.cloudSyncURL, true);
 		http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-		var params = "cloud_files_ID=" + cloud_files_ID + "&viewBtn=View&hijax=true&task=sync&cftID=" + cftID + "&xmlFile=" + xmlContents; // + <<get search value>>; // probably use document.getElementById(...).value
+		var params = "cloud_files_ID=" + cloud_files_ID + "&viewBtn=View&hijax=true&task=sync&xmlFile=" + xmlContents;
 		http.send(params);
-		if (dbug) console.log ("Just posted to " + cloudSyncURL + ".");
+		if (dbug) console.log ("Just posted to " + nordburg.cloudSyncURL + ".");
 		if (dbug) console.log ("With params: " + params + ".");
 		http.onload = function() {
-			// Ugggggg, this should not be handling this. this should do a callback
-			if (nordburg.dbug) console.log(http.responseText);
+			if (dbug) console.log(http.responseText);
 			if (callback) callback(http.responseText);
-			//if (resWin && msgCentre) { // callback(http.responseText);
-			//	var data = JSON.parse(http.responseText);
-				//var task = data["task"];
-			//	if (dbug) console.log ("Received back task: " + data["task"] + " with reason: " + data["reason"] + ".");
-			//	var newDiv = nordburg.createHTMLElement(resWin, "div", {"parentNode" : msgCentre});
-			//	newDiv.innerHTML = data["html"];
-			//}
 		}
-	},
-	getLoginForm : function (holder, callback, callback2) {
+	}, // End of uploadSyncFile
+	getLoginForm : function (holder, callback) {
+		//var callback2 = null;
+		//if (arguments.length > 2 && arguments[2] != null) callback2 = arguments[2];
 		// holder is where the form should site.  So holder.appendChild(loginForm)
 		// But, since getting the site has to be asynchronous, it's not that simple.  displayLoginForm will be 
 		// used to actually attach the form.
-		nordburg.loginURL = "https://www.nordburg.ca/users/login.php?hijax=true"; //nordburg.getCharPref("extensions.nordburg.", "loginURL");
-		nordburg.getRemotePage(nordburg.loginURL, nordburg.displayLoginForm, true, holder, callback, callback2);
+		//nordburg.loginURL = "https://www.nordburg.ca/users/login.php?hijax=true"; //nordburg.getCharPref("extensions.nordburg.", "loginURL");
+		nordburg.getRemotePage(nordburg.loginURL + "?hijax=true", nordburg.displayLoginForm, true, holder, callback);
 	}, // End of getLoginForm
 	displayLoginForm : function (doc, args) {
-		// Note: This function is not tested at all!!
-		//var mc = doc.getElementById("mainContent");
-		var dbug = (arguments.length == 3 && arguments[2] != null && arguments[2] != false ? true : false);
-		var mainContent = args[0];  // ?????
-		var topDoc = mainContent.ownerDocument; // = topDoc.getElementById("syncMainContent");
+		// args should be: holder, callback, maybe callback2.  I still don't know what callback2 is for.
+
+		var dbug = nordburg.dbug; //(arguments.length == 3 && arguments[2] != null && arguments[2] != false ? true : false);
+		var holder = args[0];  // the holder.
+		var topDoc = holder.ownerDocument; // = topDoc.getElementById("syncMainContent");
+		console.log ("topDoc: " + topDoc + ".");
 		var callback = args[1];
 		var loginForm = null;
 		loginForm = doc.getElementById("nordburgLoginform");  // This line could be a problem
+		console.log ("loginForm: " + loginForm + ".");
 		if (dbug) console.log ("got loginForm: " + loginForm + ".");
 		if (dbug) console.log ("got topDoc: " + topDoc + ".");
 		if (dbug) console.log ("got doc: " + doc + ".");
-		if (dbug) console.log ("got mainContent: " + mainContent + ".");
+		if (dbug) console.log ("got holder: " + holder + ".");
 		if (loginForm) {
-			mainContent.appendChild(loginForm);
-			loginForm.setAttribute("action", nordburg.loginURL);
+			holder.appendChild(loginForm);
+			loginForm.setAttribute("action", nordburg.loginURL + "?hijax=true");
 			if (dbug) console.log("Setting action to " + loginForm.getAttribute("action") + " .");
 		} else {
 			if (dbug) console.log("Couldn't find loginForm.");
@@ -683,19 +867,28 @@ nordburg = {
 				nordburgPassword = topDoc.getElementById("nordburgPassword");
 				if (nordburgUsername && nordburgPassword) {
 					if (dbug) console.log("Sending " + nordburgUsername.value + " and " + nordburgPassword.value + ".");
-					var url = nordburg.loginURL + "&task=login&nordburgUsername=" + nordburgUsername.value + "&nordburgPassword=" + nordburgPassword.value;
-					nordburg.getRemoteFile(url, function (resDoc) {
-						//mc.parentNode.removeChild(mc);
+					// Ummmmm can we send this as a POST thing instead of GET?
+					var url = nordburg.loginURL + "?hijax=true&task=login&nordburgUsername=" + nordburgUsername.value + "&nordburgPassword=" + nordburgPassword.value;
+
+					var http = new XMLHttpRequest();
+					http.open("POST", nordburg.loginURL, true);
+					http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+					var params = "hijax=true&task=login&nordburgUsername=" + nordburgUsername.value + "&nordburgPassword=" + nordburgPassword.value;
+					params = params.replace(/%20/g, '+');
+					http.send(params);
+					if (dbug) console.log ("Just posted to " + nordburg.loginURL + ".");
+					if (dbug) console.log ("With params: " + params + ".");
+					http.onload = function() {
+						var resDoc = http.responseText;
+						if (dbug) console.log(resDoc);
+						//if (callback) callback(http.responseText);
 						if (resDoc.match(/Unfortunately, there's not much use right now to logging in, but enjoy your stay!/i)) {
-							nordbar.setLoginMenu(true);
-							topDoc.removeChild(loginForm);
+							holder.removeChild(loginForm);
 							callback(args.slice(2));
 						} else {
-							nordbar.setLoginMenu(false);
 							var tryAgain = nordburg.createHTMLElement(topDoc, "div", {"parentNode":loginForm, "textNode":"Sorry, try again some other time."});	// This isn't ideal.  I'd rather show the login form again.
-							nordburg.displayLoginForm (doc, args);
 						}
-					});
+					}
 				} else {
 					if (dbug) console.log("Couldn't find username or password.");
 				}
@@ -705,22 +898,22 @@ nordburg = {
 		}
 	}, // End of displayLoginForm
 	getHash : function (str) {
-	// function borrowed from http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
-	var hash = 0, i, chr, len = str.length;
-	if (len == 0) return hash;
-	for (i = 0; i < len; i++) {
-		chr   = str.charCodeAt(i);
-		// Below:
-		// first, add five 0 to the end of the character.
-		// So, if chr = 5, then it can represented as 101.  Then it becomes 10100000 (minus 0) + 101 = 10100101
-		hash  = ((hash << 5) - hash) + chr;
-		// Below:
-		// Convert to 32bit integer, it's a bitwise OR assignement operator, hash = hash | 0;
-		// So, if the hash happens to be 5, then has equals 00000000000000000000000000000101.
-		hash |= 0;
-	}
-	return hash;
-}, // End of getHash
+		// function borrowed from http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+		var hash = 0, i, chr, len = str.length;
+		if (len == 0) return hash;
+		for (i = 0; i < len; i++) {
+			chr   = str.charCodeAt(i);
+			// Below:
+			// first, add five 0 to the end of the character.
+			// So, if chr = 5, then it can represented as 101.  Then it becomes 10100000 (minus 0) + 101 = 10100101
+			hash  = ((hash << 5) - hash) + chr;
+			// Below:
+			// Convert to 32bit integer, it's a bitwise OR assignement operator, hash = hash | 0;
+			// So, if the hash happens to be 5, then has equals 00000000000000000000000000000101.
+			hash |= 0;
+		}
+		return hash;
+	}, // End of getHash
 	/* Before callig this function, don't forget to remove all event handlers in the row.*/
 	removeThisRow : function (node) {
 		var returnValue = true;
@@ -736,7 +929,8 @@ nordburg = {
 		return returnValue;
 	},
 	amILoggedIn : function (callback) {
-		var dbug = false; //nordburg.dbug; //getBoolPref("extensions.nordbar.", "dbug");
+		var dbug = nordburg.dbug; //getBoolPref("extensions.nordbar.", "dbug");
+		dbug = (arguments.length >1 && (arguments[1] != null && arguments[1] != false) ? true : false);
 		//console.log ("dbug: " + dbug + ".");
 		var msg = [];
 		msg.push("Checking if I'm logged in...");
@@ -744,17 +938,17 @@ nordburg = {
 		var args = [];
 		var mn = 1;
 		if (arguments.length > mn) {
-			args = Array.slice(arguments);
-			args = args.slice(mn);	
+			args = Array.prototype.slice.call(arguments);
+			args = args.slice(mn);
 		}
-		//var url = "https://www.nordburg.ca/users/login.php?hijax=true&rnd=" + Math.random();
-		var url = "https://www.nordburg.ca/misc/cloudSync.php?hijax=true&task=gcfids&rnd=" + Math.random();
+		var url = nordburg.cloudSyncURL + "?hijax=true&task=gcfids&rnd=" + Math.random();
 		nordburg.getRemoteFile(url, function (doc) {
 			//doc = JSON.parse(doc);
 			msg.push("Calling " + url);
 			msg.push("Got " + doc + ".");
 			msg.push("Which is of type: " + typeof(doc) + ".");
-			if (doc.match(/{("\d+"\s*:"\d*",?)+}/)) {
+			//{"1":{"name":"FB Tracker"
+			if (doc.match(/{"\d+"\s*:\s*{"name"\s*:".*",\s*"last_updated"\s*:\s*/)) {
 				msg.push ("Yup, looks like what you're looking for.  Logged in.");
 				rv = JSON.parse(doc);
 			} else {
@@ -768,33 +962,11 @@ nordburg = {
 			msg.push(output.join(", "));
 			*/
 
-			/*
-			var mc = doc.getElementById("mainContent");
-			if (!mc) {
-				//mc = nordburg.createHTMLElement(doc, "div", {id: "mainContent", "parentNode": doc});
-				mc = doc.documentElement;
-			}
-			if (mc) {
-				var cont = nordburg.getNodeText(mc);
-				msg.push(cont);
-				if (cont.match(/You're already logged in!/i)) {
-					msg.push("Logged in");
-					rv = true;
-				} else {
-					msg.push("Not logged in.");
-					rv = false;
-				}
-			} else {
-				msg.push("Can't tell cuz couldn't get main content.");
-				msg.push(doc);
-			}
-			*/
-			//if
 			msg.push("Returning: " + rv + ".");
 			if (dbug) console.log (msg.join("\n"));
 			if (callback != null) callback(rv, args);
 		}, true);
-	},
+	}, // End of amILoggedIn
 	cloneNode : function (node) {
 		/* Oh crap.  This is harder than it looks.  You can only clone nodes when you know that there
 		 * are no child nodes of type 1. */

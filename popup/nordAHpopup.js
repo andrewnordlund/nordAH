@@ -5,11 +5,10 @@ if (typeof (nordAHpopup) == "undefined") {
 nordAHpopup = {
 	dbug : nordAH.dbug,
 	running : false,
-	randomSampleSize : 0,
-	sizeOfSite : 0,
 	tabId : null,
 	htmlEls : {"numOfPagesTxt" : null, "numOfPagesBtn" : null, "randomSampleSizeOutput" : null, "numOfPagesResultsP" : null, "assessmentToggleBtn" : null, "showResultsBtn" : null, "clearBtn" : null, "titlesSection":null, "languagesSection":null, "interopSection" : null, "doctypeSection":null, "encodingSection":null, "feedSection":null, "wriSection" : null},
 	init : function (savedObj) {
+		/*
 		var sizeOfSite =0, randomSampleSize = "0";
 		if (savedObj && nordburg.countObjs(savedObj) > 0) {
 			if (nordAHpopup.dbug) console.log ("Got savedObj with " + nordburg.countObjs(savedObj) + " properties.");
@@ -21,6 +20,7 @@ nordAHpopup = {
 		} else {
 			if (nordAHpopup.dbug) console.log ("Didn't get savedObj.");
 		}
+		*/
 		nordAHpopup.prepPage();
 	
 		
@@ -56,7 +56,7 @@ nordAHpopup = {
 
 		var pgsDiv1 = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":randomSampleSection, "class":"fieldHolder"});
 		var pgsLbl = nordburg.createOptionsHTMLElement(document, "label", {"parentNode":pgsDiv1, "for":"numOfPagesTxt", "textNode":browser.i18n.getMessage("pagesInSite") + ":"});
-		nordAHpopup.htmlEls["numOfPagesTxt"] = nordburg.createOptionsHTMLElement(document, "input", {"parentNode":pgsDiv1, "id":"numOfPagesTxt", "value":nordAHpopup.sizeOfSite});
+		nordAHpopup.htmlEls["numOfPagesTxt"] = nordburg.createOptionsHTMLElement(document, "input", {"parentNode":pgsDiv1, "id":"numOfPagesTxt", "value":nordAH.sizeOfSite});
 
 		var pgsDiv2 = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":randomSampleSection, "class":"fieldHolder"});
 		nordAHpopup.htmlEls["numOfPagesBtn"] = nordburg.createOptionsHTMLElement(document, "button", {"parentNode":pgsDiv2, "nodeText":browser.i18n.getMessage("calculate")});
@@ -64,7 +64,7 @@ nordAHpopup = {
 
 
 		nordAHpopup.htmlEls["numOfPagesResultsP"] = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":randomSampleSection, "id":"numOfPagesResultsP", "aria-live":"polite", "tabindex":"0", "textNode":browser.i18n.getMessage("numOfPagesResultsP") + " "});
-		nordAHpopup.htmlEls["randomSampleSizeOutput"] = nordburg.createOptionsHTMLElement(document, "output", {"parentNode":nordAHpopup.htmlEls["numOfPagesResultsP"], "for":"numOfPagesTxt", "textNode":nordAHpopup.randomSampleSize});
+		nordAHpopup.htmlEls["randomSampleSizeOutput"] = nordburg.createOptionsHTMLElement(document, "output", {"parentNode":nordAHpopup.htmlEls["numOfPagesResultsP"], "for":"numOfPagesTxt", "textNode":nordAH.randomSampleSize});
 		
 
 		// Assessment Process Section
@@ -113,7 +113,7 @@ nordAHpopup = {
 	},
 	startRecording : function () {
 		if (nordAHpopup.dbug) console.log ("Start recording....");
-		browser.runtime.sendMessage({"msg" : "Start recording, yo", "task" : "startRecording", "randomSampleSize" : nordAHpopup.randomSampleSize, "sizeOfSite" : nordAHpopup.sizeOfSite});
+		browser.runtime.sendMessage({"msg" : "Start recording, yo", "task" : "startRecording", "randomSampleSize" : nordAH.randomSampleSize, "sizeOfSite" : nordAH.sizeOfSite});
 		nordAHpopup.running = true;
 		nordAHpopup.toggleRecordingButtons();
 	}, // End of startRecording
@@ -183,18 +183,19 @@ nordAHpopup = {
 			if (numOfPages % 17 == 1) nordAHpopup.easterEgg();
 			nordAHpopup.htmlEls["randomSampleSizeOutput"].innerHTML = rv;
 			nordAHpopup.htmlEls["numOfPagesResultsP"].focus();
-			nordAHpopup.randomSampleSize = rv;
-			nordAHpopup.sizeOfSite = numOfPages;
-			var thisSiteInfo = {"randomSampleSize" : nordAHpopup.randomSampleSize, "sizeOfSite" : nordAHpopup.sizeOfSite};
-			var setting = browser.storage.local.set({"thisSite" : thisSiteInfo});
-			setting.then(null, nordAH.errorFun);
-			if (nordAHpopup.dbug) console.log ("Sending message to background: setNewValues, randomSampleSize: "  + nordAHpopup.randomSampleSize +  ", sizeOfSite:" + nordAHpopup.sizeOfSite + ".");
+			nordAH.randomSampleSize = rv;
+			nordAH.sizeOfSite = numOfPages;
+			//var thisSiteInfo = {"randomSampleSize" : nordAHpopup.randomSampleSize, "sizeOfSite" : nordAHpopup.sizeOfSite};
+			//var setting = browser.storage.local.set({"thisSite" : thisSiteInfo});
+			//setting.then(null, nordAH.errorFun);
+			nordAH.saveSite()
+			if (nordAHpopup.dbug) console.log ("Sending message to background: setNewValues, randomSampleSize: "  + nordAH.randomSampleSize +  ", sizeOfSite:" + nordAH.sizeOfSite + ".");
 			browser.runtime.sendMessage({"msg":"Reset size of site details.", 
 				"task":"setNewValues", 
-				"randomSampleSize" : nordAHpopup.randomSampleSize, 
-				"sizeOfSite" : nordAHpopup.sizeOfSite}).then(null, nordAH.errorFun);
+				"randomSampleSize" : nordAH.randomSampleSize, 
+				"sizeOfSite" : nordAH.sizeOfSite}).then(null, nordAH.errorFun);
 		}
-	},
+	}, // End of calcRndmSample
 	presentTitles : function (titles) {
 		if (nordAHpopup.dbug) console.log ("Presenting titles.");
 		var titlesDL = nordburg.createHTMLElement(document, "dl", {"parentNode":nordAHpopup.htmlEls["titlesSection"], "id":"titlesList"});
@@ -297,9 +298,17 @@ browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
 	nordAHpopup.tabId = tabs[0].id;
 	if (nordAHpopup.dbug) console.log ("tabId is now " + nordAHpopup.tabId + ".");
 
-	var getting = browser.storage.local.get("thisSite");
-	getting.then(nordAHpopup.init, nordAH.errorFun);
+	//var getting = browser.storage.local.get("thisSite");
+	//getting.then(nordAHpopup.init, nordAH.errorFun);
 
+	nordAH.getSaved(function () {
+		if (nordAHpopup.dbug) {
+			console.log ("sampleSize: " + nordAH.randomSampleSize);	
+			console.log ("sizeOfSite: " + nordAH.sizeOfSite);	
+			console.log ("About to initPopup.");
+		}
+		nordAHpopup.init();
+	}, nordAH.errorFun);
 
 }, nordAH.errorFun);
 
