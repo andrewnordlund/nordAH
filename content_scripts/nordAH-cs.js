@@ -418,18 +418,18 @@ var nordAHCS = {
 		if (nordAHCS.dbug) console.log ("I would do the Easter Egg now.");
 		var screenH = window.innerHeight;
 		var screenW = window.innerWidth;
-		var pageYOffset = window.content.document.documentElement.scrollTop;
-		var body = window.content.document.getElementsByTagName("body");
+		var pageYOffset = document.documentElement.scrollTop;
+		var body = document.getElementsByTagName("body");
 		if (body) {
 			body = body[0];
 			var x = (screenW/2) - 533/2;
 			var y = screenH + pageYOffset;
 					
-			var newDiv = window.content.document.createElement("div");
+			var newDiv = document.createElement("div");
 			newDiv.setAttribute("id", "windowHolder");
 			newDiv.setAttribute("style", "position: absolute; z-index: 99999; left: 0; top: 0; width: " + screenW + "px; height: " + y + "px; overflow: hidden;");
 			body.appendChild(newDiv);
-			var img = window.content.document.createElement("img");
+			var img = document.createElement("img");
 			img.setAttribute("src", browser.extension.getURL("/content_scripts/mrfalcon-begining.png"));
 			img.setAttribute("style", "position: absolute; display: block; left: " + x + "px; height:317px; width:533px;");
 			img.setAttribute("alt", "Mr. Falcon.");
@@ -437,7 +437,7 @@ var nordAHCS = {
 			newDiv.appendChild(img);
 			var upInt;
 			upInt = setInterval(function () {
-				y = y - 5;
+				y = y - 15;
 				img.style.top= y + "px";
 				if (y < (317 * -1) + pageYOffset) {
 					clearInterval(upInt);

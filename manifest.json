@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 	"description": "__MSG_extensionDescription__",
 	"name": "__MSG_extensionName__",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"icons" : {
 		"48" : "icons/nordAH-48.png",
 		"96" : "icons/nordAH-96.png"
@@ -27,13 +27,6 @@
 			"38" : "icons/nordAH-38.png"
 		}
 	},
-	"content_scripts": [
-		{
-			"matches": [ "<all_urls>" ],
-			"js": ["libs/nordburg.js", "libs/nordAH.js", "content_scripts/nordAH-cs.js" ],
-			"run_at" : "document_end"
-		}
-	],
 	"default_locale": "en",
 	"developer": {
 		"name": "Andrew Nordlund"
