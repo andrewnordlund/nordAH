@@ -167,5 +167,9 @@
 	"unknown" : {
 		"message" : "Unknown",
 		"description" : "When something's unknown"
+	},
+	"Assessment" : {
+		"message" : "Assessment",
+		"description" : "Title for Assessment section of popup"
 	}
 }

@@ -6,6 +6,7 @@ nordAHpopup = {
 	dbug : nordAH.dbug,
 	running : false,
 	tabId : null,
+	tabURL : null,
 	htmlEls : {"numOfPagesTxt" : null, "numOfPagesBtn" : null, "randomSampleSizeOutput" : null, "numOfPagesResultsP" : null, "assessmentToggleBtn" : null, "showResultsBtn" : null, "clearBtn" : null, "titlesSection":null, "languagesSection":null, "interopSection" : null, "doctypeSection":null, "encodingSection":null, "feedSection":null, "wriSection" : null},
 	init : function (savedObj) {
 		/*
@@ -26,14 +27,35 @@ nordAHpopup = {
 		
 		if (nordAHpopup.htmlEls["titlesSection"] || nordAHpopup.htmlEls["languagesSection"] || nordAHpopup.htmlEls["doctypeSection"] || nordAHpopup.htmlEls["encodingSection"] || nordAHpopup.htmlEls["feedSection"]) {
 			if (nordAHpopup.dbug) console.log ("Sending message getInfo to tabId: " + nordAHpopup.tabId + ".");
-			
-			browser.tabs.sendMessage(nordAHpopup.tabId, {"msg":"Get Info.", "task":"getInfo"}).then (function (msg) {
+			var worked = true;
+			var presentData = function (msg) {
 				nordAHpopup.presentTitles(msg["titles"]);
 				nordAHpopup.presentLangs(msg["langs"]);
 				nordAHpopup.presentDoctype(msg["doctype"]);
 				nordAHpopup.presentEncoding(msg["encoding"]);
 				nordAHpopup.presentFeeds(msg["feeds"]);
-			}, nordAH.errorFun);
+			}
+
+			if (nordAHpopup.dbug) console.log ("About to call the content script.");
+			var sndMsg = browser.tabs.sendMessage(nordAHpopup.tabId, {"msg":"Get Info.", "task":"getInfo"}).catch(function (x) {
+				worked = false;
+				if (nordAHpopup.dbug) console.log ("Caught something: " + x.toString());
+				if (x.toString() == "Error: Could not establish connection. Receiving end does not exist.") {
+					browser.tabs.executeScript(nordAHpopup.tabId, {file : "/libs/nordburg.js"}).then (function () {
+						browser.tabs.executeScript(nordAHpopup.tabId, {file : "/libs/nordAH.js"}).then(function () {
+							browser.tabs.executeScript(nordAHpopup.tabId, {file : "/content_scripts/nordAH-cs.js"}).then(function () {
+								if (nordAHpopup.dbug) console.log ("Okay, all content scripts should be loaded now.  Gonna try sending message again.");
+								var sndMsg2 = browser.tabs.sendMessage(nordAHpopup.tabId, {"msg":"Get Info.", "task":"getInfo"});
+								sndMsg2.then(presentData, nordAH.errorFun);
+							}, nordAH.errorFun);
+						}, nordAH.errorFun);
+					}, nordAH.errorFun);
+				}
+			});
+			sndMsg.then(function (msg) {
+				if (worked) presentData(msg)}
+				, nordAH.errorFun);
+
 		}
 		browser.runtime.sendMessage({"msg" : "Get recording status", "task" : "getRecordingStatus"}).then(function (msg) {
 			if (msg.msg) {
@@ -50,9 +72,11 @@ nordAHpopup = {
 		var heading = document.getElementsByTagName("heading")[0];
 		var h1 = nordburg.createOptionsHTMLElement(document, "h1", {"parentNode":heading, "nodeText":document.title});
 
+		var assessmentSection = document.getElementById("assessmentSection");
+		var assessmentSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":assessmentSection, "nodeText":browser.i18n.getMessage("Assessment"), "insertBefore":"randomSampleSection"});
 		// Random Sample Section
 		var randSampleSection = document.getElementById("randomSampleSection");
-		var randomSampleSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":randomSampleSection, "nodeText":browser.i18n.getMessage("randomSample")});
+		var randomSampleSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":randomSampleSection, "nodeText":browser.i18n.getMessage("randomSample")});
 
 		var pgsDiv1 = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":randomSampleSection, "class":"fieldHolder"});
 		var pgsLbl = nordburg.createOptionsHTMLElement(document, "label", {"parentNode":pgsDiv1, "for":"numOfPagesTxt", "textNode":browser.i18n.getMessage("pagesInSite") + ":"});
@@ -69,7 +93,7 @@ nordAHpopup = {
 
 		// Assessment Process Section
 		var assessmentProcessSection = document.getElementById("assessmentProcessSection");
-		var assessmentProcessSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":assessmentProcessSection, "nodeText":browser.i18n.getMessage("assessmentProcess")});
+		var assessmentProcessSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":assessmentProcessSection, "nodeText":browser.i18n.getMessage("assessmentProcess")});
 
 		var toggleBtnDiv = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":assessmentProcessSection, "class":"fieldHolder"});
 		nordAHpopup.htmlEls["assessmentToggleBtn"] = nordburg.createOptionsHTMLElement(document, "button", {"parentNode":toggleBtnDiv, "nodeText":browser.i18n.getMessage("startRecording")});
@@ -83,18 +107,23 @@ nordAHpopup = {
 		nordAHpopup.htmlEls["clearBtn"] = nordburg.createOptionsHTMLElement(document, "button", {"parentNode":clearBtnDiv, "nodeText":browser.i18n.getMessage("clear")});
 		nordAHpopup.htmlEls["clearBtn"].addEventListener("click", nordAHpopup.showResults, false);
 
+		// Page section
+		var pageSection = document.getElementById("pageSection");
+		var pageSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":pageSection, "nodeText":"Page", "insertBefore":"titlesSection"});
+
+		var urlAndTitleP = nordburg.createOptionsHTMLElement(document, "p", {"id":"urlAndTitle", "parentNode":pageSection, "nodeText": "", "class":"selectable", "insertAfter":pageSectionH2});
 
 		// Titles section
 		nordAHpopup.htmlEls["titlesSection"] = document.getElementById("titlesSection");
-		var titlesSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["titlesSection"], "nodeText":browser.i18n.getMessage("titles")});
+		var titlesSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":nordAHpopup.htmlEls["titlesSection"], "nodeText":browser.i18n.getMessage("titles")});
 
 		// Languages section
 		nordAHpopup.htmlEls["languagesSection"] = document.getElementById("languagesSection");
-		var languagesSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["languagesSection"], "nodeText":browser.i18n.getMessage("languages")});
+		var languagesSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":nordAHpopup.htmlEls["languagesSection"], "nodeText":browser.i18n.getMessage("languages")});
 
 		// Interoperability Section
 		nordAHpopup.htmlEls["interopSection"] = document.getElementById("interopSection");
-		//var interopSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":nordAHpopup.htmlEls["interopSection"], "nodeText":browser.i18n.getMessage("interoperability")});
+		//var interopSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":nordAHpopup.htmlEls["interopSection"], "nodeText":browser.i18n.getMessage("interoperability")});
 
 
 		// Doctype section
@@ -146,9 +175,13 @@ nordAHpopup = {
 	calcRndmSample : function (e) {
 		if (nordAHpopup.dbug) console.log ("Calculating.");
 		var siteSizeTxt = nordAHpopup.htmlEls["numOfPagesTxt"].value;
+		if (nordAHpopup.dbug) console.log ("Got siteSizeTxt: " + siteSizeTxt + ".");
 		var rv = 0;
 		if ((siteSizeTxt.match(/mr\./i) || siteSizeTxt.match(/mister/i)) && siteSizeTxt.match(/f(alcon)?/i)) {
+			if (nordAHpopup.dbug) console.log ("Hello Mr. Falcon.  Trying an easter egg.");
 			nordAHpopup.easterEgg();
+		} else {
+			if (nordAHpopup.dbug) console.log ("Not Mr. Falcon.  Not gona do an easter egg yet.");
 		}
 		var numOfPages = siteSizeTxt.replace(/\D/g, "");
 
@@ -180,7 +213,10 @@ nordAHpopup = {
 			} else if (numOfPages > 500) {
 				rv = 68;
 			}
-			if (numOfPages % 17 == 1) nordAHpopup.easterEgg();
+			if (numOfPages % 17 == 1) {
+				if (nordAHpopup.dbug) console.log ("Gonna do an easter egg.");
+				nordAHpopup.easterEgg();
+			}
 			nordAHpopup.htmlEls["randomSampleSizeOutput"].innerHTML = rv;
 			nordAHpopup.htmlEls["numOfPagesResultsP"].focus();
 			nordAH.randomSampleSize = rv;
@@ -207,7 +243,8 @@ nordAHpopup = {
 			var newItem = nordburg.createHTMLElement(document, "dt", {"textNode": titleTypes[k] + ":", "parentNode":titlesDL});
 			if (k.match(/titleTag|readcrumbs/i)) {
 				var style = (k == "titleTag" && titles[k] == browser.i18n.getMessage("noTitleTag") ? "border: thick solid #AA0000;" : "");
-				var newValue = nordburg.createHTMLElement(document, "dd", {"textNode":titles[k], "parentNode":titlesDL, "style" : style, "class":"selectable"});
+				var newValueDD = nordburg.createHTMLElement(document, "dd", {"parentNode":titlesDL});
+				var newValueSpan = nordburg.createHTMLElement(document, "span", {"textNode":titles[k], "parentNode":newValueDD, "style" : style, "class":"selectable"});
 			} else if (k.match(/h1s/i)) {
 				var newValue = nordburg.createHTMLElement(document, "dd", {"parentNode":titlesDL});
 				var newOL = nordburg.createHTMLElement(document, "ol", {"parentNode":newValue, "id":k+"List"});
@@ -224,6 +261,11 @@ nordAHpopup = {
 					var newLI = nordburg.createHTMLElement(document, "li", {"parentNode":newOL, "textNode":titles[k][i], "class":"selectable"});
 				}
 			}
+		}
+		var urlAndTitleP = null;
+		urlAndTitleP = document.getElementById("urlAndTitle");
+		if (urlAndTitleP) {
+			urlAndTitleP.innerHTML = nordAHpopup.tabURL + " (" + titles["titleTag"] + ")";
 		}
 	},
 	presentLangs : function (langs) {
@@ -289,14 +331,29 @@ nordAHpopup = {
 	easterEgg : function () {
 		// ugh.
 		if (nordAHpopup.dbug) console.log ("Gonna do an easter egg.");
-		browser.runtime.sendMessage({"msg":"Gonna do easter egg", "task":"easterEgg"});
+		if (nordAHpopup.dbug) console.log ("About to call the content script.");
+		browser.tabs.sendMessage(nordAHpopup.tabId, {"msg":"Gonna do easter egg", "task":"easterEgg"}).catch(function (x) {
+			if (nordAHpopup.dbug) console.log ("Caught something: " + x.toString());
+			if (x.toString() == "Error: Could not establish connection. Receiving end does not exist.") {
+				browser.tabs.executeScript(nordAHpopup.tabId, {file : "/libs/nordburg.js"}).then (function () {
+					browser.tabs.executeScript(nordAHpopup.tabId, {file : "/libs/nordAH.js"}).then(function () {
+						browser.tabs.executeScript(nordAHpopup.tabId, {file : "/content_scripts/nordAH-cs.js"}).then(function () {
+							browser.tabs.sendMessage(nordAHpopup.tabId, {"msg":"Gonna do easter egg", "task":"easterEgg"});
+						}, nordAH.errorFun);
+					}, nordAH.errorFun);
+				}, nordAH.errorFun);
+			}
+		});
+		//browser.runtime.sendMessage({"msg":"Gonna do easter egg", "task":"easterEgg"});
 	},
 }
 
 browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
 	if (nordAHpopup.dbug) console.log ("Setting tabId to " + tabs[0].id + ".");
 	nordAHpopup.tabId = tabs[0].id;
+	nordAHpopup.tabURL = tabs[0].url;
 	if (nordAHpopup.dbug) console.log ("tabId is now " + nordAHpopup.tabId + ".");
+	if (nordAHpopup.dbug) console.log ("tabURL is now " + nordAHpopup.tabURL + ".");
 
 	//var getting = browser.storage.local.get("thisSite");
 	//getting.then(nordAHpopup.init, nordAH.errorFun);
