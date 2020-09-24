@@ -265,7 +265,7 @@ nordAHpopup = {
 		var urlAndTitleP = null;
 		urlAndTitleP = document.getElementById("urlAndTitle");
 		if (urlAndTitleP) {
-			urlAndTitleP.innerHTML = nordAHpopup.tabURL + " (" + titles["titleTag"] + ")";
+			urlAndTitleP.innerHTML = "[" + titles["titleTag"] + "](" + nordAHpopup.tabURL +")";
 		}
 	},
 	presentLangs : function (langs) {
