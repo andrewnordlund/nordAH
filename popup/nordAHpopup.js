@@ -7,7 +7,7 @@ nordAHpopup = {
 	running : false,
 	tabId : null,
 	tabURL : null,
-	htmlEls : {"numOfPagesTxt" : null, "numOfPagesBtn" : null, "randomSampleSizeOutput" : null, "numOfPagesResultsP" : null, "assessmentToggleBtn" : null, "showResultsBtn" : null, "clearBtn" : null, "titlesSection":null, "languagesSection":null, "interopSection" : null, "doctypeSection":null, "encodingSection":null, "feedSection":null, "wriSection" : null},
+	htmlEls : {"numOfPagesTxt" : null, "numOfPagesBtn" : null, "assetNameSection" : null, "randomSampleSizeOutput" : null, "numOfPagesResultsP" : null, "assessmentToggleBtn" : null, "showResultsBtn" : null, "clearBtn" : null, "titlesSection":null, "languagesSection":null, "interopSection" : null, "doctypeSection":null, "encodingSection":null, "feedSection":null, "wriSection" : null},
 	init : function (savedObj) {
 		/*
 		var sizeOfSite =0, randomSampleSize = "0";
@@ -74,6 +74,25 @@ nordAHpopup = {
 
 		var assessmentSection = document.getElementById("assessmentSection");
 		var assessmentSectionH2 = nordburg.createOptionsHTMLElement(document, "h2", {"parentNode":assessmentSection, "nodeText":browser.i18n.getMessage("Assessment"), "insertBefore":"randomSampleSection"});
+		
+		// Asset Name section
+		let assetNamesURL = "http://n30032272.hrdc-drhc.net:81/api.php?q=getAssets&l=en";
+			let assetNameSection = document.getElementById("assetNameSection");
+			let assetNameH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":assetNameSection, "nodeText":"Asset Info"});
+			let assetNameDiv = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":assetNameSection, "class":"fieldHolder"});
+			let assetNameLbl = nordburg.createOptionsHTMLElement(document, "label", {"parentNode":assetNameDiv, "nodeText":"Asset name:", "for":"assetNameTxt"});
+			let assetNameTxt = nordburg.createOptionsHTMLElement(document, "input", {"parentNode":assetNameDiv, "type":"text", "id":"assetNameTxt", "list":"assetNameList"}); //, "list":"assetNamesList"});
+			let assetNameList = nordburg.createOptionsHTMLElement(document, "datalist", {"parentNode":assetNameDiv, "id":"assetNameList"});
+		nordburg.getRemoteFile(assetNamesURL, function (doc) {
+			doc = JSON.parse(doc);
+			for (let id in doc) {
+				if (id.match(/^\d+$/)) {
+					console.log ("Adding id: " + id + ": " + doc[id]["name_en"] + ".");
+					nordburg.createOptionsHTMLElement(document, "option", {"parentNode":assetNameList, "value":id, "nodeText":doc[id]["name_en"]});
+				}
+			}
+		});
+
 		// Random Sample Section
 		var randSampleSection = document.getElementById("randomSampleSection");
 		var randomSampleSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":randomSampleSection, "nodeText":browser.i18n.getMessage("randomSample")});
