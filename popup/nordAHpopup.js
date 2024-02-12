@@ -210,7 +210,7 @@ nordAHpopup = {
 				rv = 66;
 			} else if (numOfPages > 2500 && numOfPages <= 5000) {
 				rv = 67;
-			} else if (numOfPages > 500) {
+			} else if (numOfPages > 5000) {
 				rv = 68;
 			}
 			if (numOfPages % 17 == 1) {
