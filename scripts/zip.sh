@@ -1,2 +1,4 @@
 rm build/nordAH.xpi
-zip -r build/nordAH.xpi src/manifest.json src/nordAH-bg.js src/_locales src/libs src/content_scripts src/icons src/options src/popup src/results -x *.swp *.DS_Store "*~"
+cd src
+zip -r ../build/nordAH.xpi manifest.json nordAH-bg.js _locales libs content_scripts icons options popup results -x *.swp *.DS_Store "*~"
+cd ..
