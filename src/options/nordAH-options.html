@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Norburg Assessment Helper Options</title>
+		<script type="text/javascript" src="../libs/nordburg.js"></script>
+		<script type="text/javascript" src="../libs/nordAH.js"></script>
+	</head>
+	<body>
+		<section id="optionsSection">
+			<h2>Options</h2>
+			<section id="devSection">
+				<h2>Developer Options</h2>
+				<!-- Window or Tab -->
+				<fieldset>
+					<legend>Show Results in a New...</legend>
+					<div>
+						<input type="radio" name="tabOrWin" id="tabRB">
+						<label for="tabRB">Tab</label>
+					</div>
+					<div>
+						<input type="radio" name="tabOrWin" id="winRB">
+						<label for="winRB">Window</label>
+					</div>
+				</fieldset>			
+
+				<!-- dbug -->
+				<div>
+					<div>
+						<input type="checkbox" name="tabCountChk" id="tabCountChk">
+						<label for="tabCountChk" id="tabCountLbl">Show Tab Count</label>
+					</div>
+					<div>
+						<input type="checkbox" name="dbugChk" id="dbugChk">
+						<label for="dbugChk">Debugging</label>
+					</div>
+				</div>
+			</section>
+
+			<div id="buttonsHolder">
+				<button id="saveBtn">Save</button>
+				<button id="cancelBtn">Cancel</button>
+			</div>
+		</section>
+	</body>
+	<script src="nordAH-options.js" type="text/Javascript"></script>
+</html>
