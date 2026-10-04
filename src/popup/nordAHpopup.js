@@ -7,6 +7,8 @@ nordAHpopup = {
 	running : false,
 	tabId : null,
 	tabURL : null,
+	tabCount : null,
+	tabString : "",
 	htmlEls : {"numOfPagesTxt" : null, "numOfPagesBtn" : null, "randomSampleSizeOutput" : null, "numOfPagesResultsP" : null, "assessmentToggleBtn" : null, "showResultsBtn" : null, "clearBtn" : null, "titlesSection":null, "languagesSection":null, "interopSection" : null, "doctypeSection":null, "encodingSection":null, "feedSection":null, "wriSection" : null},
 	init : function (savedObj) {
 		/*
@@ -22,6 +24,10 @@ nordAHpopup = {
 			if (nordAHpopup.dbug) console.log ("Didn't get savedObj.");
 		}
 		*/
+		if (nordAH.options.tabCount == true) {
+			nordAHpopup.tabString = " (" + nordAHpopup.tabId + "/" + nordAHpopup.tabCount + ")";
+			if (nordAHpopup.dbug) console.log (`Set tabString to:${nordAHpopup.tabString}.`);
+		}
 		nordAHpopup.prepPage();
 	
 		
@@ -96,7 +102,7 @@ nordAHpopup = {
 		var assessmentProcessSectionH2 = nordburg.createOptionsHTMLElement(document, "h3", {"parentNode":assessmentProcessSection, "nodeText":browser.i18n.getMessage("assessmentProcess")});
 
 		var toggleBtnDiv = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":assessmentProcessSection, "class":"fieldHolder"});
-		nordAHpopup.htmlEls["assessmentToggleBtn"] = nordburg.createOptionsHTMLElement(document, "button", {"parentNode":toggleBtnDiv, "nodeText":browser.i18n.getMessage("startRecording")});
+		nordAHpopup.htmlEls["assessmentToggleBtn"] = nordburg.createOptionsHTMLElement(document, "button", {"parentNode":toggleBtnDiv, "nodeText":browser.i18n.getMessage("startRecording") + nordAHpopup.tabString});
 		nordAHpopup.htmlEls["assessmentToggleBtn"].addEventListener("click", nordAHpopup.startRecording, false);
 
 		var showResultsBtnDiv = nordburg.createOptionsHTMLElement(document, "div", {"parentNode":assessmentProcessSection, "class":"fieldHolder"});
@@ -154,11 +160,11 @@ nordAHpopup = {
 	}, // End of stopRecording
 	toggleRecordingButtons : function () {
 		if (nordAHpopup.running) {
-			nordAHpopup.htmlEls["assessmentToggleBtn"].innerHTML = browser.i18n.getMessage("stopRecording");
+			nordAHpopup.htmlEls["assessmentToggleBtn"].innerHTML = browser.i18n.getMessage("stopRecording") + nordAHpopup.tabString;
 			nordAHpopup.htmlEls["assessmentToggleBtn"].removeEventListener("click", nordAHpopup.startRecording);
 			nordAHpopup.htmlEls["assessmentToggleBtn"].addEventListener("click", nordAHpopup.stopRecording, false);
 		} else {
-			nordAHpopup.htmlEls["assessmentToggleBtn"].innerHTML = browser.i18n.getMessage("startRecording");
+			nordAHpopup.htmlEls["assessmentToggleBtn"].innerHTML = browser.i18n.getMessage("startRecording") + nordAHpopup.tabString;
 			nordAHpopup.htmlEls["assessmentToggleBtn"].removeEventListener("click", nordAHpopup.stopRecording);
 			nordAHpopup.htmlEls["assessmentToggleBtn"].addEventListener("click", nordAHpopup.startRecording, false);
 		}
@@ -166,7 +172,14 @@ nordAHpopup = {
 	showResults : function () {
 		// Somehow show results
 		if (nordAHpopup.dbug) console.log ("Gonna somehow show results.");
-		browser.tabs.create({url: "/results/nordAHResults.html"});
+
+		if (nordAHpopup.dbug) console.log ("options[\"tabs\"] = " + nordAH.options["tabs"] + ".");
+		if (nordAH.options["tabs"] === true) {
+			browser.tabs.create({url: "/results/nordAHResults.html"});
+		} else {
+			let creating = browser.windows.create({url: "/results/nordAHResults.html", type:"normal"});
+		}
+
 	}, // End of showResults
 	clear : function () {
 		if (nordAHpopup.dbug) console.log ("Clearning....");
@@ -304,7 +317,7 @@ nordAHpopup = {
 		var encodingDL = nordburg.createHTMLElement(document, "dl", {"parentNode":nordAHpopup.htmlEls["encodingSection"], "id":"encodingList"});
 		for (var k in encoding) {
 			var dt = nordburg.createHTMLElement(document, "dt", {"parentNode":encodingDL, "textNode":encoding[k]["title"]});
-			if (nordAHpopup.dbug) console.log ("About to to do " + k + ": " + encoding[k] + ".");
+			if (nordAHpopup.dbug) console.log ("About to do " + k + ": " + encoding[k] + ".");
 			var dd = nordburg.createHTMLElement(document, "dd", {"parentNode":encodingDL, "textNode":encoding[k]["value"]});
 		}
 		
@@ -346,28 +359,54 @@ nordAHpopup = {
 		});
 		//browser.runtime.sendMessage({"msg":"Gonna do easter egg", "task":"easterEgg"});
 	},
+	getTabCount : function () {
+		if (nordAHpopup.dbug) console.log ("getTabCount....");
+		browser.tabs.query({currentWindow: true}).then(function(tabs) {
+			if (nordAHpopup.dbug) console.log (`Setting getting tabCount: ${tabs.length}.`);
+			nordAHpopup.tabCount = tabs.length;
+			if (nordAHpopup.dbug) {
+				for (let i = 0; i < tabs.length; i++) {
+					console.log (`tabs[${i}]: ${tabs[i].id}.`);
+				}
+			}
+		}, nordAH.errorFun);
+		
+	},// End of getTabCount
+	getThisTabInfo : function () {
+		if (nordAHpopup.dbug) console.log ("getThisTabInfo....");
+		browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
+			if (nordAHpopup.dbug) console.log ("Setting tabId to " + tabs[0].id + ".");
+			nordAHpopup.tabId = tabs[0].id;
+			nordAHpopup.tabURL = tabs[0].url;
+			if (nordAHpopup.dbug) console.log ("tabId is now " + nordAHpopup.tabId + ".");
+			if (nordAHpopup.dbug) console.log ("tabURL is now " + nordAHpopup.tabURL + ".");
+
+			var getting = browser.storage.local.get("thisSite");
+			getting.then(nordAHpopup.init, nordAH.errorFun);
+
+			nordAH.getSaved(function () {
+				if (nordAHpopup.dbug) {
+					console.log ("sampleSize: " + nordAH.randomSampleSize);	
+					console.log ("sizeOfSite: " + nordAH.sizeOfSite);	
+					console.log ("About to initPopup.");
+				}
+				//nordAHpopup.init();
+			}, nordAH.errorFun);
+
+		}, nordAH.errorFun);
+
+	}, // End of getThisTabInfo
 }
-
-browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
-	if (nordAHpopup.dbug) console.log ("Setting tabId to " + tabs[0].id + ".");
-	nordAHpopup.tabId = tabs[0].id;
-	nordAHpopup.tabURL = tabs[0].url;
-	if (nordAHpopup.dbug) console.log ("tabId is now " + nordAHpopup.tabId + ".");
-	if (nordAHpopup.dbug) console.log ("tabURL is now " + nordAHpopup.tabURL + ".");
-
-	//var getting = browser.storage.local.get("thisSite");
-	//getting.then(nordAHpopup.init, nordAH.errorFun);
-
-	nordAH.getSaved(function () {
-		if (nordAHpopup.dbug) {
-			console.log ("sampleSize: " + nordAH.randomSampleSize);	
-			console.log ("sizeOfSite: " + nordAH.sizeOfSite);	
-			console.log ("About to initPopup.");
-		}
-		nordAHpopup.init();
-	}, nordAH.errorFun);
-
-}, nordAH.errorFun);
-
-
+//if (nordAH.options["tabCount"] == true) {
+//		} else {
+//			if (nordAHpopup.dbug) console.log ("Not getting tabCount.");
+//		}
+/*
+*/
+nordAH.addToPostLoad([nordAHpopup.getTabCount, nordAHpopup.getThisTabInfo]);//, nordAHpopup.init]);
 if (nordAHpopup.dbug) console.log ("nordAHpopup.js loaded.");
+/*
+await nordAHpopup.getTabCount();
+await nordAHpopup.getThisTabInfo();
+nordAHpopup.init();
+*/

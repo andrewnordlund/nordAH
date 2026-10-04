@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 	"description": "__MSG_extensionDescription__",
 	"name": "__MSG_extensionName__",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"icons" : {
 		"48" : "icons/nordAH-48.png",
 		"96" : "icons/nordAH-96.png"
@@ -42,5 +42,10 @@
 		"<all_urls>",
 		"storage"
 	],
+	"options_ui" : {
+		"page" : "options/nordAH-options.html",
+		"browser_style" : true
+	},
+ 
 	"web_accessible_resources": ["content_scripts/mrfalcon-begining.png"]
 }
